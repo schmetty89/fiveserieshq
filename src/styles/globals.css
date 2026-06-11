@@ -1,0 +1,62 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Design tokens ── */
+:root {
+  --font-inter: 'Inter', system-ui, sans-serif;
+
+  /* Brand */
+  --color-navy:  #0f0f0f;
+  --color-accent: #3a8fff;
+
+  /* Generation palette */
+  --gen-e34-bg:   #FAECE7;
+  --gen-e34-text: #993C1D;
+  --gen-e34-border: #F0997B;
+
+  --gen-e39-bg:   #E6F1FB;
+  --gen-e39-text: #185FA5;
+  --gen-e39-border: #85B7EB;
+
+  --gen-e60-bg:   #EEEDFE;
+  --gen-e60-text: #534AB7;
+  --gen-e60-border: #AFA9EC;
+
+  --gen-f10-bg:   #E1F5EE;
+  --gen-f10-text: #0F6E56;
+  --gen-f10-border: #5DCAA5;
+
+  --gen-g30-bg:   #FAEEDA;
+  --gen-g30-text: #854F0B;
+  --gen-g30-border: #EF9F27;
+}
+
+/* ── Base resets ── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: #ffffff;
+  color: #111111;
+  font-family: var(--font-inter);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Generation badge utility classes ── */
+.gen-badge {
+  @apply inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-full;
+}
+.gen-badge-e34 { background: var(--gen-e34-bg); color: var(--gen-e34-text); }
+.gen-badge-e39 { background: var(--gen-e39-bg); color: var(--gen-e39-text); }
+.gen-badge-e60 { background: var(--gen-e60-bg); color: var(--gen-e60-text); }
+.gen-badge-f10 { background: var(--gen-f10-bg); color: var(--gen-f10-text); }
+.gen-badge-g30 { background: var(--gen-g30-bg); color: var(--gen-g30-text); }
+
+/* ── Scrollbar (subtle) ── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
