@@ -151,7 +151,7 @@ export function ForumIndex() {
           <div className="px-4 py-2 bg-gray-50/50 border-b border-gray-100">
             <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest">🇺🇸 United States</span>
           </div>
-          {REGIONAL_SUBFORUMS.filter(r => !r.id.includes('canada')).map((region, idx, arr) => (
+          {REGIONAL_SUBFORUMS.filter(r => !r.id.includes('canada')).map((region) => (
             <Link
               key={region.id}
               href={`/forums/subforum?region=${region.id}`}

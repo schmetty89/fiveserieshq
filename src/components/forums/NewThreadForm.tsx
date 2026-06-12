@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { Loader2, AlertCircle, ChevronRight } from 'lucide-react'
 import { createThread, createPost } from '@/lib/forum-data'
 import { useAuth } from '@/components/auth/AuthProvider'
-import { GENERATIONS, Generation } from '@/types'
+import { GENERATIONS } from '@/types'
 import { GEN_SUBFORUM_CATS, REGIONAL_SUBFORUMS } from '@/lib/forum-config'
 import { Suspense } from 'react'
 

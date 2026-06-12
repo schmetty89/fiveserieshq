@@ -7,7 +7,7 @@ import { formatRelativeTime } from '@/lib/utils'
 import { GEN_SUBFORUM_CATS, REGIONAL_SUBFORUMS, GEN_COLORS } from '@/lib/forum-config'
 import { getThreads } from '@/lib/forum-data'
 import { useAuth } from '@/components/auth/AuthProvider'
-import { Generation, GENERATION_YEARS } from '@/types'
+import { Generation } from '@/types'
 
 interface Props {
   gen?: string
