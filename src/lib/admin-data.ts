@@ -173,3 +173,25 @@ export async function setMemberRole(id: string, role: 'member' | 'moderator' | '
   const supabase = createClient()
   await supabase.from('profiles').update({ role }).eq('id', id)
 }
+
+// ── Member tiers ──────────────────────────────────────────
+export async function getPendingTierRequests() {
+  const supabase = createClient()
+  const { data } = await supabase
+    .from('profiles')
+    .select('id, username, role, location, post_count, created_at, tier')
+    .eq('tier', 1)
+    .order('created_at', { ascending: true })
+  return data ?? []
+}
+
+export async function approveTier2(id: string) {
+  const supabase = createClient()
+  await supabase.from('profiles').update({ tier: 2 }).eq('id', id)
+}
+
+export async function denyTier2(id: string) {
+  // Stays at tier 1 — no action needed, but we log the decision
+  // In future this could set a denied_tier2 flag
+  console.log('Tier 2 denied for user:', id)
+}

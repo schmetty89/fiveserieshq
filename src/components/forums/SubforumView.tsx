@@ -7,6 +7,7 @@ import { formatRelativeTime } from '@/lib/utils'
 import { GEN_SUBFORUM_CATS, REGIONAL_SUBFORUMS, GEN_COLORS } from '@/lib/forum-config'
 import { getThreads } from '@/lib/forum-data'
 import { useAuth } from '@/components/auth/AuthProvider'
+import { TierBadge } from '@/components/members/TierBadge'
 import { Generation } from '@/types'
 
 interface ThreadRow {
@@ -28,7 +29,7 @@ interface Props {
 }
 
 export function SubforumView({ gen, cat, region }: Props) {
-  const { user } = useAuth()
+  const { user, isTier2 } = useAuth()
   const [threads, setThreads] = useState<ThreadRow[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -102,7 +103,7 @@ export function SubforumView({ gen, cat, region }: Props) {
           )}
           <h1 className="text-xl font-medium text-gray-900">{title}</h1>
         </div>
-        {user && (
+        {user && isTier2 && (
           <Link
             href={`/forums/new?gen=${gen ?? ''}&cat=${cat ?? ''}&region=${region ?? ''}`}
             className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-gray-900 text-white text-sm font-medium hover:bg-gray-700 transition-colors"
@@ -188,7 +189,7 @@ export function SubforumView({ gen, cat, region }: Props) {
                     </p>
                   </div>
                   <div className="flex items-center gap-3 text-xs text-gray-400">
-                    <span>{author?.username ?? 'Unknown'}</span>
+                    <span className="flex items-center gap-1">{author?.username ?? 'Unknown'}{author?.tier && <TierBadge tier={author.tier} size={12} />}</span>
                     <span className="flex items-center gap-1">
                       <Clock size={11} />{formatRelativeTime(thread.last_reply_at)}
                     </span>

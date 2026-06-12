@@ -3,12 +3,29 @@
 import { createContext, useContext, useEffect, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase'
 import type { User, SupabaseClient } from '@supabase/supabase-js'
-import type { Profile } from '@/types'
+
+interface Profile {
+  id: string
+  username: string
+  avatar_url?: string
+  bio?: string
+  location?: string
+  member_number: number
+  post_count: number
+  build_count: number
+  video_count: number
+  role: string
+  tier: number
+  created_at: string
+}
 
 interface AuthContextType {
   user: User | null
   profile: Profile | null
   loading: boolean
+  isTier2: boolean
+  isAdmin: boolean
+  isModerator: boolean
   signOut: () => Promise<void>
 }
 
@@ -16,6 +33,9 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   profile: null,
   loading: true,
+  isTier2: false,
+  isAdmin: false,
+  isModerator: false,
   signOut: async () => {},
 })
 
@@ -63,8 +83,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setProfile(null)
   }
 
+  const isTier2 = profile?.tier === 2
+  const isAdmin = profile?.role === 'admin'
+  const isModerator = profile?.role === 'admin' || profile?.role === 'moderator'
+
   return (
-    <AuthContext.Provider value={{ user, profile, loading, signOut }}>
+    <AuthContext.Provider value={{ user, profile, loading, isTier2, isAdmin, isModerator, signOut }}>
       {children}
     </AuthContext.Provider>
   )

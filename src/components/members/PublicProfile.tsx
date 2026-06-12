@@ -7,6 +7,7 @@ import { getProfile, getGarageCars, getMemberThreads } from '@/lib/member-data'
 import { GEN_COLORS } from '@/lib/forum-config'
 import { Generation } from '@/types'
 import { formatRelativeTime } from '@/lib/utils'
+import { TierBadge } from './TierBadge'
 
 interface Props { username: string }
 
@@ -19,6 +20,7 @@ interface ProfileData {
   post_count: number
   build_count: number
   video_count: number
+  tier: number
   created_at: string
 }
 
@@ -91,7 +93,10 @@ export function PublicProfile({ username }: Props) {
           <div className="w-20 h-20 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 text-2xl font-semibold mb-3">
             {initials}
           </div>
-          <h1 className="text-lg font-semibold text-gray-900">{profile.username}</h1>
+          <div className="flex items-center gap-2 justify-center">
+            <h1 className="text-lg font-semibold text-gray-900">{profile.username}</h1>
+            <TierBadge tier={profile.tier ?? 1} size={18} />
+          </div>
           <p className="text-xs text-gray-400 mt-0.5">Member #{profile.member_number}</p>
         </div>
 

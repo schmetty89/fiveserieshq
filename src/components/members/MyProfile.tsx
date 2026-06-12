@@ -6,6 +6,7 @@ import { MapPin, Calendar, MessageCircle, Car, Youtube, Edit, Save, X, Loader2 }
 import { useAuth } from '@/components/auth/AuthProvider'
 import { getGarageCars, getMemberThreads, updateProfile } from '@/lib/member-data'
 import { GarageTab } from './GarageTab'
+import { TierBadge } from './TierBadge'
 import { formatRelativeTime } from '@/lib/utils'
 import { GEN_COLORS } from '@/lib/forum-config'
 import { Generation } from '@/types'
@@ -41,7 +42,7 @@ const BADGES = [
 ]
 
 export function MyProfile() {
-  const { user, profile } = useAuth()
+  const { user, profile, isTier2 } = useAuth()
   const [activeTab, setActiveTab] = useState<Tab>('garage')
   const [cars, setCars] = useState<GarageCar[]>([])
   const [threads, setThreads] = useState<Thread[]>([])
@@ -120,7 +121,10 @@ export function MyProfile() {
           <div className="w-20 h-20 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 text-2xl font-semibold mb-3">
             {initials}
           </div>
-          <h1 className="text-lg font-semibold text-gray-900">{profile.username}</h1>
+          <div className="flex items-center gap-2 justify-center">
+            <h1 className="text-lg font-semibold text-gray-900">{profile.username}</h1>
+            <TierBadge tier={profile.tier ?? 1} size={18} />
+          </div>
           <p className="text-xs text-gray-400 mt-0.5">Member #{profile.member_number}</p>
           <Link
             href={`/members/${profile.username}`}
@@ -214,17 +218,21 @@ export function MyProfile() {
           </div>
         </div>
 
-        {/* Badges */}
+        {/* Membership tier */}
         <div>
-          <p className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">Badges</p>
+          <p className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">Membership</p>
           <div className="flex flex-wrap gap-2">
-            {BADGES.map(b => (
-              <span key={b.label} className="text-xs px-2.5 py-1 rounded-full font-medium"
-                style={{ background: b.bg, color: b.color }}>
-                {b.label}
-              </span>
-            ))}
+            <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${
+              isTier2 ? 'bg-green-50 text-green-700' : 'bg-amber-50 text-amber-700'
+            }`}>
+              {isTier2 ? '✓ Tier 2 — Full access' : '⏳ Tier 1 — Pending approval'}
+            </span>
           </div>
+          {!isTier2 && (
+            <p className="text-xs text-gray-400 mt-2 leading-relaxed">
+              Your account is pending Tier 2 approval. An admin will review your account shortly.
+            </p>
+          )}
         </div>
       </aside>
 

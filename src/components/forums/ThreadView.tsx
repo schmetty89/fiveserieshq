@@ -7,6 +7,7 @@ import { formatRelativeTime, extractYouTubeId } from '@/lib/utils'
 import { GEN_COLORS } from '@/lib/forum-config'
 import { getThread, getPosts, createPost, markThreadSolved } from '@/lib/forum-data'
 import { useAuth } from '@/components/auth/AuthProvider'
+import { TierBadge } from '@/components/members/TierBadge'
 import { Generation } from '@/types'
 
 interface PostProfile {
@@ -43,7 +44,7 @@ interface Thread {
 interface Props { threadId: string }
 
 export function ThreadView({ threadId }: Props) {
-  const { user } = useAuth()
+  const { user, isTier2 } = useAuth()
   const [thread, setThread] = useState<Thread | null>(null)
   const [posts, setPosts] = useState<Post[]>([])
   const [loading, setLoading] = useState(true)
@@ -186,7 +187,7 @@ export function ThreadView({ threadId }: Props) {
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="text-sm font-medium text-gray-800">{postAuthor?.username ?? 'Unknown'}</span>
+                  <span className="flex items-center gap-1.5 text-sm font-medium text-gray-800">{postAuthor?.username ?? 'Unknown'}{postAuthor?.tier && <TierBadge tier={postAuthor.tier} size={13} />}</span>
                   <span className="text-xs text-gray-400">{formatRelativeTime(post.created_at)}</span>
                 </div>
                 <div className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap mb-3">
@@ -230,7 +231,7 @@ export function ThreadView({ threadId }: Props) {
       </div>
 
       {/* Reply composer */}
-      {user ? (
+      {user && isTier2 ? (
         <div className="border border-gray-200 rounded-xl p-5">
           <h3 className="text-sm font-medium text-gray-800 mb-3">Post a reply</h3>
           <form onSubmit={handleReply}>
@@ -259,11 +260,12 @@ export function ThreadView({ threadId }: Props) {
         </div>
       ) : (
         <div className="border border-gray-200 rounded-xl p-6 text-center">
-          <p className="text-sm text-gray-500 mb-3">
-            <Link href="/auth/join" className="font-medium text-gray-900 hover:underline">Join FiveSeriesHQ</Link>
-            {' '}or{' '}
-            <Link href="/auth/login" className="font-medium text-gray-900 hover:underline">sign in</Link>
-            {' '}to reply.
+          <p className="text-sm text-gray-500">
+            {!user ? (
+              <><Link href="/auth/join" className="font-medium text-gray-900 hover:underline">Join FiveSeriesHQ</Link>{' '}or{' '}<Link href="/auth/login" className="font-medium text-gray-900 hover:underline">sign in</Link>{' '}to reply.</>
+            ) : (
+              <>Your account is pending Tier 2 approval. Once approved by an admin you can post and reply.</>
+            )}
           </p>
         </div>
       )}
