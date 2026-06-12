@@ -26,7 +26,7 @@ const CAR_IMAGES: Record<Generation, string> = {
 }
 
 // Nürburgring background
-const BG_IMAGE = 'https://xgfvrlrbeymronphmpii.supabase.co/storage/v1/object/public/hero-images/HOMEPAGE%20BACKGROUND.png'
+const BG_IMAGE = 'https://xgfvrlrbeymronphmpii.supabase.co/storage/v1/object/public/hero-images/HOMEPAGE%20BACKGROUND.png?v=2'
 
 export function HeroSection() {
   const [hovered, setHovered] = useState<Generation | null>(null)
@@ -97,7 +97,7 @@ export function HeroSection() {
         </div>
 
         {/* Cars lineup */}
-        <div className="flex items-end justify-center gap-1 px-4 pb-0" style={{ height: '240px' }}>
+        <div className="flex items-end justify-center gap-1 px-4 pb-0" style={{ height: '160px' }}>
           {GENERATIONS.map(gen => {
             const isDimmed = active !== null && active !== gen
             return (
@@ -107,7 +107,7 @@ export function HeroSection() {
                 onMouseLeave={() => setHovered(null)}
                 onClick={() => handleCarClick(gen)}
                 aria-label={`Explore BMW ${gen} — ${GENERATION_YEARS[gen]}`}
-                className="flex-1 max-w-[195px] flex flex-col items-center justify-end cursor-pointer group relative"
+                className="flex-1 max-w-[130px] flex flex-col items-center justify-end cursor-pointer group relative"
                 style={{
                   transform: active === gen
                     ? 'translateY(-14px) scale(1.03)'
@@ -132,8 +132,8 @@ export function HeroSection() {
                   <Image
                     src={CAR_IMAGES[gen]}
                     alt={`BMW ${gen} M5`}
-                    width={390}
-                    height={234}
+                    width={240}
+                    height={144}
                     className="w-full h-auto object-cover object-bottom"
                     priority={gen === 'E39'}
                   />
@@ -170,7 +170,7 @@ export function HeroSection() {
 
         {/* Selected gen panel */}
         {selected && (
-          <div className="relative z-10 bg-[#0f0f0f]/95 backdrop-blur-sm border-t border-white/10 px-6 py-3">
+          <div className="relative z-10 bg-[#0f0f0f]/95 backdrop-blur-sm border-t border-white/10 px-6 py-2">
             <div className="max-w-screen-lg mx-auto flex flex-col sm:flex-row gap-4 items-start sm:items-center">
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1 flex-wrap">
