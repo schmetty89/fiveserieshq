@@ -59,8 +59,8 @@ export function LoginForm() {
               <span className="flex items-center justify-center bg-[#0f0f0f] text-white text-[8px] font-black"></span>
             </div>
             <div className="text-left leading-tight">
-              <div className="text-sm font-semibold text-gray-900 tracking-wide">FiveSeriesHQ</div>
-              <div className="text-[10px] text-gray-400 tracking-widest uppercase">Community</div>
+              <div className="text-sm font-semibold text-gray-900 tracking-wide">The Five Series HQ</div>
+              <div className="text-[10px] text-gray-400 tracking-widest uppercase"/div>
             </div>
           </Link>
           <h1 className="text-2xl font-semibold text-gray-900 mt-6 mb-1">Welcome back</h1>

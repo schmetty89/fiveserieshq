@@ -53,15 +53,11 @@ export function Navbar() {
 
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2.5 flex-shrink-0">
-          <div className="w-8 h-8 rounded-full border-2 border-white/70 grid grid-cols-2 overflow-hidden">
-            <span className="flex items-center justify-center bg-white text-[#0055b3] text-[7px] font-black">B</span>
-            <span className="flex items-center justify-center bg-[#0055b3] text-white text-[7px] font-black">M</span>
-            <span className="flex items-center justify-center bg-[#0055b3] text-white text-[7px] font-black">W</span>
-            <span className="flex items-center justify-center bg-white text-[#0055b3] text-[7px] font-black"></span>
+          <div className="w-8 h-8 rounded-full bg-[#0055b3] flex items-center justify-center flex-shrink-0">
+              <span className="text-white font-black text-[15px]" style={{ fontStyle: 'italic' }}>M</span>
           </div>
           <div className="leading-tight">
-            <div className="text-[13px] font-medium text-white tracking-wide">5 Series</div>
-            <div className="text-[9px] text-white/40 tracking-[2px] uppercase">Community</div>
+            <div className="text-[13px] font-medium text-white tracking-wide">The Five Series HQ</div>
           </div>
         </Link>
 
