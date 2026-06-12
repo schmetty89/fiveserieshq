@@ -13,6 +13,7 @@ import { Generation } from '@/types'
 interface PostProfile {
   username: string
   avatar_url?: string
+  tier?: number
 }
 
 interface Post {

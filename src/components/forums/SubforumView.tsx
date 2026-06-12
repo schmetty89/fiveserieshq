@@ -19,7 +19,7 @@ interface ThreadRow {
   is_solved: boolean
   reply_count: number
   last_reply_at: string
-  profiles: { username: string; avatar_url?: string } | { username: string; avatar_url?: string }[]
+  profiles: { username: string; avatar_url?: string; tier?: number } | { username: string; avatar_url?: string; tier?: number }[]
 }
 
 interface Props {
