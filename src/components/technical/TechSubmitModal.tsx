@@ -1,11 +1,12 @@
 'use client'
 
-import { useState } from 'react'
-import { X, Loader2, AlertCircle, CheckCircle } from 'lucide-react'
+import { useState, useRef } from 'react'
+import { X, Loader2, AlertCircle, CheckCircle, Upload, FileText } from 'lucide-react'
 import { GENERATIONS } from '@/types'
 import { MAINTENANCE_SYSTEMS, PERFORMANCE_SYSTEMS, DOC_CATEGORIES } from '@/lib/technical-config'
 import { submitTechDocument, submitTechArticle } from '@/lib/technical-data'
 import { useAuth } from '@/components/auth/AuthProvider'
+import { createClient } from '@/lib/supabase'
 
 interface Props {
   defaultGen?: string
@@ -15,6 +16,9 @@ interface Props {
 
 export function TechSubmitModal({ defaultGen, defaultSection, onClose }: Props) {
   const { user } = useAuth()
+  const supabase = createClient()
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
   const [form, setForm] = useState({
     section: defaultSection || 'maintenance',
     contentType: 'guide' as 'guide' | 'pdf',
@@ -25,6 +29,8 @@ export function TechSubmitModal({ defaultGen, defaultSection, onClose }: Props) 
     yearRange: '',
     body: '',
   })
+  const [file, setFile] = useState<File | null>(null)
+  const [uploading, setUploading] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [submitted, setSubmitted] = useState(false)
@@ -34,7 +40,33 @@ export function TechSubmitModal({ defaultGen, defaultSection, onClose }: Props) 
     setError('')
   }
 
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const selected = e.target.files?.[0]
+    if (!selected) return
+    // Max 50MB
+    if (selected.size > 50 * 1024 * 1024) {
+      setError('File must be under 50MB.')
+      return
+    }
+    setFile(selected)
+    setError('')
+  }
+
   const systems = form.section === 'performance' ? PERFORMANCE_SYSTEMS : MAINTENANCE_SYSTEMS
+
+  async function uploadFile(): Promise<string | null> {
+    if (!file || !user) return null
+    setUploading(true)
+    const ext = file.name.split('.').pop()
+    const filename = `${user.id}/${Date.now()}.${ext}`
+    const { data, error } = await supabase.storage
+      .from('tech-documents')
+      .upload(filename, file, { cacheControl: '3600', upsert: false })
+    setUploading(false)
+    if (error) throw error
+    const { data: urlData } = supabase.storage.from('tech-documents').getPublicUrl(data.path)
+    return urlData.publicUrl
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -45,20 +77,30 @@ export function TechSubmitModal({ defaultGen, defaultSection, onClose }: Props) 
 
     setLoading(true)
     try {
+      let fileUrl: string | null = null
+
+      // Upload file if provided
+      if (file) {
+        fileUrl = await uploadFile()
+      }
+
       if (form.section === 'documents') {
-        if (!form.docCategory) return setError('Please select a document category.')
-        if (!form.yearRange.trim()) return setError('Please enter the year range.')
+        if (!form.docCategory) { setError('Please select a document category.'); setLoading(false); return }
+        if (!form.yearRange.trim()) { setError('Please enter the year range.'); setLoading(false); return }
+        if (!file) { setError('Please upload the document file.'); setLoading(false); return }
         await submitTechDocument({
           name: form.title.trim(),
           generation: form.generation,
           category: form.docCategory,
-          fileUrl: '#pending',
+          fileUrl: fileUrl ?? '#pending',
+          fileSizeMb: file ? Math.round(file.size / 1024 / 1024 * 10) / 10 : undefined,
           yearRange: form.yearRange.trim(),
           submittedBy: user.id,
         })
       } else {
-        if (!form.system) return setError('Please select a system category.')
-        if (form.contentType === 'guide' && !form.body.trim()) return setError('Please write the guide content.')
+        if (!form.system) { setError('Please select a system category.'); setLoading(false); return }
+        if (form.contentType === 'guide' && !form.body.trim()) { setError('Please write the guide content.'); setLoading(false); return }
+        if (form.contentType === 'pdf' && !file) { setError('Please upload a PDF file.'); setLoading(false); return }
         await submitTechArticle({
           title: form.title.trim(),
           generation: form.generation,
@@ -66,7 +108,7 @@ export function TechSubmitModal({ defaultGen, defaultSection, onClose }: Props) 
           system: form.system,
           contentType: form.contentType,
           body: form.contentType === 'guide' ? form.body.trim() : undefined,
-          fileUrl: form.contentType === 'pdf' ? '#pending' : undefined,
+          fileUrl: fileUrl ?? undefined,
           authorId: user.id,
         })
       }
@@ -77,6 +119,8 @@ export function TechSubmitModal({ defaultGen, defaultSection, onClose }: Props) 
       setLoading(false)
     }
   }
+
+  const needsFile = form.section === 'documents' || (form.section !== 'documents' && form.contentType === 'pdf')
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
@@ -96,7 +140,6 @@ export function TechSubmitModal({ defaultGen, defaultSection, onClose }: Props) 
             <h3 className="text-lg font-medium text-gray-900 mb-2">Submitted for review</h3>
             <p className="text-sm text-gray-500 leading-relaxed mb-6">
               Your submission will be reviewed by the admin before it appears in the library.
-              Verified content is marked with a badge.
             </p>
             <button onClick={onClose}
               className="px-5 py-2.5 rounded-lg bg-gray-900 text-white text-sm font-medium hover:bg-gray-700 transition-colors">
@@ -136,7 +179,7 @@ export function TechSubmitModal({ defaultGen, defaultSection, onClose }: Props) 
               </div>
             </div>
 
-            {/* Content type (for maintenance/performance) */}
+            {/* Content type */}
             {form.section !== 'documents' && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Content type</label>
@@ -154,7 +197,7 @@ export function TechSubmitModal({ defaultGen, defaultSection, onClose }: Props) 
               </div>
             )}
 
-            {/* Generation */}
+            {/* Generation + category */}
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">Generation</label>
@@ -164,8 +207,6 @@ export function TechSubmitModal({ defaultGen, defaultSection, onClose }: Props) 
                   {GENERATIONS.map(g => <option key={g} value={g}>{g}</option>)}
                 </select>
               </div>
-
-              {/* System category or doc category */}
               {form.section === 'documents' ? (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1.5">Document type</label>
@@ -213,17 +254,45 @@ export function TechSubmitModal({ defaultGen, defaultSection, onClose }: Props) 
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">Guide content</label>
                 <textarea name="body" value={form.body} onChange={handleChange}
                   rows={6}
-                  placeholder="Write your guide here. Be as detailed as possible — include tools needed, part numbers, torque specs, and step-by-step instructions."
+                  placeholder="Write your guide here. Include tools needed, part numbers, torque specs, and step-by-step instructions."
                   className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2.5 resize-none focus:outline-none focus:ring-2 focus:ring-gray-900" />
               </div>
             )}
 
-            {/* PDF upload notice */}
-            {(form.section === 'documents' || form.contentType === 'pdf') && (
-              <div className="bg-blue-50 border border-blue-100 rounded-lg px-4 py-3">
-                <p className="text-xs text-blue-700 leading-relaxed">
-                  📎 File upload will be available soon. For now, submit the details and the admin will follow up to collect your file.
-                </p>
+            {/* File upload */}
+            {needsFile && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                  {form.section === 'documents' ? 'Upload document' : 'Upload PDF'}
+                  {form.section === 'documents' && <span className="text-red-500 ml-1">*</span>}
+                </label>
+                <div
+                  onClick={() => fileInputRef.current?.click()}
+                  className={`border-2 border-dashed rounded-lg p-5 text-center cursor-pointer transition-colors ${
+                    file ? 'border-green-300 bg-green-50' : 'border-gray-200 hover:border-gray-300 bg-gray-50'
+                  }`}
+                >
+                  {file ? (
+                    <div className="flex items-center justify-center gap-2 text-green-700">
+                      <FileText size={16} />
+                      <span className="text-sm font-medium">{file.name}</span>
+                      <span className="text-xs text-green-600">({Math.round(file.size / 1024 / 1024 * 10) / 10} MB)</span>
+                    </div>
+                  ) : (
+                    <div className="text-gray-400">
+                      <Upload size={20} className="mx-auto mb-2" />
+                      <p className="text-sm">Click to upload a PDF or document</p>
+                      <p className="text-xs mt-1">Max 50MB · PDF, DOC, DOCX</p>
+                    </div>
+                  )}
+                </div>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".pdf,.doc,.docx"
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
               </div>
             )}
 
@@ -232,9 +301,15 @@ export function TechSubmitModal({ defaultGen, defaultSection, onClose }: Props) 
                 className="text-sm px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors">
                 Cancel
               </button>
-              <button type="submit" disabled={loading}
+              <button type="submit" disabled={loading || uploading}
                 className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-gray-900 text-white text-sm font-medium hover:bg-gray-700 disabled:opacity-60 transition-colors">
-                {loading ? <><Loader2 size={13} className="animate-spin" /> Submitting...</> : 'Submit for review'}
+                {uploading ? (
+                  <><Loader2 size={13} className="animate-spin" /> Uploading file...</>
+                ) : loading ? (
+                  <><Loader2 size={13} className="animate-spin" /> Submitting...</>
+                ) : (
+                  'Submit for review'
+                )}
               </button>
             </div>
           </form>
