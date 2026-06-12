@@ -84,12 +84,8 @@ export function HeroSection() {
                     key={model}
                     className="text-xs px-2.5 py-1 rounded-full font-medium"
                     style={{
-                      background: model === 'M5' || model.startsWith('M5')
-                        ? GEN_COLORS[active].text
-                        : 'rgba(255,255,255,0.12)',
-                      color: model === 'M5' || model.startsWith('M5')
-                        ? '#fff'
-                        : 'rgba(255,255,255,0.7)',
+                      background: 'rgba(255,255,255,0.12)',
+                      color: 'rgba(255,255,255,0.7)',
                     }}
                   >
                     {model}
