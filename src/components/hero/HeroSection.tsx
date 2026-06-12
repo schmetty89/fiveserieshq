@@ -52,7 +52,7 @@ export function HeroSection() {
         <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a]/70 via-[#0a0a0a]/20 to-[#0a0a0a]/85" />
       </div>
 
-      <div className="relative z-10 flex flex-col" style={{ minHeight: '620px' }}>
+      <div className="relative z-10 flex flex-col" style={{ minHeight: '560px' }}>
 
         {/* Hero copy */}
         <div className="flex-1 flex flex-col items-center justify-center pt-14 pb-4 px-6 text-center">
@@ -97,7 +97,7 @@ export function HeroSection() {
         </div>
 
         {/* Cars lineup */}
-        <div className="flex items-end justify-center gap-1 px-4 pb-0" style={{ height: '338px' }}>
+        <div className="flex items-end justify-center gap-1 px-4 pb-8" style={{ height: '280px' }}>
           {GENERATIONS.map(gen => {
             const isDimmed = active !== null && active !== gen
             return (
@@ -170,7 +170,7 @@ export function HeroSection() {
 
         {/* Selected gen panel */}
         {selected && (
-          <div className="relative z-10 bg-[#0f0f0f]/95 backdrop-blur-sm border-t border-white/10 px-6 py-5">
+          <div className="relative z-10 bg-[#0f0f0f]/95 backdrop-blur-sm border-t border-white/10 px-6 py-3">
             <div className="max-w-screen-lg mx-auto flex flex-col sm:flex-row gap-4 items-start sm:items-center">
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1 flex-wrap">
