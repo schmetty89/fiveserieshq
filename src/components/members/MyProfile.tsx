@@ -36,11 +36,6 @@ interface GarageCar {
   build_id?: string
 }
 
-const BADGES = [
-  { label: 'Member', bg: '#E6F1FB', color: '#185FA5' },
-  { label: 'Contributor', bg: '#E1F5EE', color: '#085041' },
-]
-
 export function MyProfile() {
   const { user, profile, isTier2 } = useAuth()
   const [activeTab, setActiveTab] = useState<Tab>('garage')
