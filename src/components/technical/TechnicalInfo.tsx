@@ -99,7 +99,7 @@ export function TechnicalInfo() {
   }, [activeArticleId, loadArticle])
 
   const systems = activeSection === 'performance' ? PERFORMANCE_SYSTEMS : MAINTENANCE_SYSTEMS
-  const docCategories = [...new Set(docs.map(d => d.category))]
+  const docCategories = Array.from(new Set(docs.map(d => d.category)))
 
   // ── Article detail view ──
   if (activeArticleId && article) {
