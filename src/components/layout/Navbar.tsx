@@ -15,6 +15,7 @@ const NAV_LINKS = [
   { href: '/vendors',   label: 'Vendors',        exact: false },
   { href: '/events',    label: 'Events',         exact: false },
   { href: '/technical', label: 'Technical info', exact: false },
+  { href: '/about',     label: 'About',          exact: false },
 ]
 
 export function Navbar() {
