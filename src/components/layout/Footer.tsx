@@ -22,9 +22,8 @@ const FOOTER_LINKS = {
   ],
   Site: [
     { label: 'About', href: '/about' },
-    { label: 'Join', href: '/join' },
-    { label: 'Contact', href: '/contact' },
-    { label: 'Rules', href: '/rules' },
+    { label: 'Join', href: '/auth/join' },
+    { label: 'Terms of Use', href: '/terms' },
   ],
 }
 

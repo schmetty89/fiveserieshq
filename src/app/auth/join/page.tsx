@@ -172,7 +172,9 @@ export default function JoinPage() {
             </div>
 
             <p className="text-xs text-gray-400 leading-relaxed">
-              By joining you agree to our community rules. This is a BMW 5 Series enthusiast community — keep it respectful and on-topic.
+              By joining you agree to our{' '}
+              <a href="/terms" target="_blank" className="underline hover:text-gray-600">Terms of Use</a>.
+              This is a BMW 5 Series enthusiast community — keep it respectful and on-topic.
             </p>
 
             <button
