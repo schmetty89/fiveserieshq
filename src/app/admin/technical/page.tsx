@@ -8,7 +8,7 @@ import {
   approveTechDoc, rejectTechDoc,
   approveTechArticle, rejectTechArticle,
 } from '@/lib/admin-data'
-import { Loader2, CheckCircle } from 'lucide-react'
+import { Loader2, CheckCircle, Download, ExternalLink } from 'lucide-react'
 
 interface TechDoc {
   id: string
@@ -16,6 +16,8 @@ interface TechDoc {
   generation: string
   category: string
   year_range: string
+  file_url?: string
+  file_size_mb?: number
   profiles: { username: string } | { username: string }[]
 }
 
@@ -27,6 +29,7 @@ interface TechArticle {
   system: string
   content_type: string
   body?: string
+  file_url?: string
   profiles: { username: string } | { username: string }[]
 }
 
@@ -86,11 +89,38 @@ export default function AdminTechnicalPage() {
             <div className="space-y-3">
               {docs.map(doc => {
                 const submitter = Array.isArray(doc.profiles) ? doc.profiles[0] : doc.profiles
+                const hasFile = doc.file_url && doc.file_url !== '#pending'
                 return (
                   <ReviewCard
                     key={doc.id}
                     title={doc.name}
-                    meta={`${doc.generation} · ${doc.category} · ${doc.year_range} · submitted by ${submitter?.username ?? 'Unknown'}`}
+                    meta={`${doc.generation} · ${doc.category} · ${doc.year_range} · by ${submitter?.username ?? 'Unknown'}`}
+                    expandContent={
+                      <div className="space-y-3">
+                        <div className="text-xs text-gray-500 space-y-1">
+                          <p><span className="font-medium text-gray-700">Generation:</span> {doc.generation}</p>
+                          <p><span className="font-medium text-gray-700">Category:</span> {doc.category}</p>
+                          <p><span className="font-medium text-gray-700">Year range:</span> {doc.year_range}</p>
+                          {doc.file_size_mb && <p><span className="font-medium text-gray-700">File size:</span> {doc.file_size_mb} MB</p>}
+                        </div>
+                        {hasFile ? (
+                          <div className="flex gap-2">
+                            <a href={doc.file_url} target="_blank" rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1.5 text-xs px-3 py-2 rounded-lg bg-gray-900 text-white hover:bg-gray-700 transition-colors">
+                              <Download size={12} /> Download &amp; inspect
+                            </a>
+                            <a href={doc.file_url} target="_blank" rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1.5 text-xs px-3 py-2 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors">
+                              <ExternalLink size={12} /> Open in new tab
+                            </a>
+                          </div>
+                        ) : (
+                          <p className="text-xs text-amber-600 bg-amber-50 px-3 py-2 rounded-lg border border-amber-100">
+                            No file attached to this submission.
+                          </p>
+                        )}
+                      </div>
+                    }
                     onApprove={() => approveTechDoc(doc.id)}
                     onReject={(reason) => rejectTechDoc(doc.id, reason)}
                   />
@@ -105,12 +135,36 @@ export default function AdminTechnicalPage() {
             <div className="space-y-3">
               {articles.map(article => {
                 const author = Array.isArray(article.profiles) ? article.profiles[0] : article.profiles
+                const hasFile = article.file_url && article.file_url !== '#pending'
                 return (
                   <ReviewCard
                     key={article.id}
                     title={article.title}
                     meta={`${article.generation} · ${article.section} · ${article.system} · ${article.content_type} · by ${author?.username ?? 'Unknown'}`}
-                    detail={article.body ? article.body.substring(0, 200) + (article.body.length > 200 ? '...' : '') : undefined}
+                    expandContent={
+                      <div className="space-y-3">
+                        {article.body && (
+                          <div>
+                            <p className="text-xs font-medium text-gray-700 mb-1">Guide content preview:</p>
+                            <p className="text-xs text-gray-500 leading-relaxed bg-gray-50 rounded-lg p-3 max-h-40 overflow-y-auto">
+                              {article.body}
+                            </p>
+                          </div>
+                        )}
+                        {hasFile && (
+                          <div className="flex gap-2">
+                            <a href={article.file_url} target="_blank" rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1.5 text-xs px-3 py-2 rounded-lg bg-gray-900 text-white hover:bg-gray-700 transition-colors">
+                              <Download size={12} /> Download PDF
+                            </a>
+                            <a href={article.file_url} target="_blank" rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1.5 text-xs px-3 py-2 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors">
+                              <ExternalLink size={12} /> Open in new tab
+                            </a>
+                          </div>
+                        )}
+                      </div>
+                    }
                     onApprove={() => approveTechArticle(article.id)}
                     onReject={(reason) => rejectTechArticle(article.id, reason)}
                   />

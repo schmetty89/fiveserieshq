@@ -90,7 +90,7 @@ export async function getPendingTechDocs() {
   const supabase = createClient()
   const { data } = await supabase
     .from('tech_documents')
-    .select(`*, profiles:submitted_by ( username )`)
+    .select(`*, file_url, file_size_mb, profiles:submitted_by ( username )`)
     .eq('verified', false)
     .eq('rejected', false)
     .order('created_at', { ascending: true })
@@ -101,7 +101,7 @@ export async function getPendingTechArticles() {
   const supabase = createClient()
   const { data } = await supabase
     .from('tech_articles')
-    .select(`*, profiles:author_id ( username )`)
+    .select(`*, file_url, profiles:author_id ( username )`)
     .eq('verified', false)
     .eq('rejected', false)
     .order('created_at', { ascending: true })
