@@ -2,19 +2,50 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { ChevronRight, CheckCircle, Pin, ArrowLeft, CornerDownRight, Loader2, Youtube } from 'lucide-react'
-import { formatRelativeTime, extractYouTubeId, getYouTubeThumbnail } from '@/lib/utils'
+import { ChevronRight, CheckCircle, Pin, CornerDownRight, Loader2, Youtube } from 'lucide-react'
+import { formatRelativeTime, extractYouTubeId } from '@/lib/utils'
 import { GEN_COLORS } from '@/lib/forum-config'
 import { getThread, getPosts, createPost, markThreadSolved } from '@/lib/forum-data'
 import { useAuth } from '@/components/auth/AuthProvider'
 import { Generation } from '@/types'
 
+interface PostProfile {
+  username: string
+  avatar_url?: string
+}
+
+interface Post {
+  id: string
+  body: string
+  image_urls?: string[]
+  youtube_url?: string
+  is_op: boolean
+  created_at: string
+  profiles: PostProfile | PostProfile[]
+}
+
+interface Thread {
+  id: string
+  title: string
+  body: string
+  generation?: string
+  category?: string
+  regional_subforum?: string
+  is_pinned: boolean
+  is_solved: boolean
+  reply_count: number
+  view_count: number
+  created_at: string
+  last_reply_at: string
+  profiles: PostProfile | PostProfile[]
+}
+
 interface Props { threadId: string }
 
 export function ThreadView({ threadId }: Props) {
-  const { user, profile } = useAuth()
-  const [thread, setThread] = useState<any>(null)
-  const [posts, setPosts] = useState<any[]>([])
+  const { user } = useAuth()
+  const [thread, setThread] = useState<Thread | null>(null)
+  const [posts, setPosts] = useState<Post[]>([])
   const [loading, setLoading] = useState(true)
   const [reply, setReply] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -24,8 +55,8 @@ export function ThreadView({ threadId }: Props) {
     async function load() {
       try {
         const [t, p] = await Promise.all([getThread(threadId), getPosts(threadId)])
-        setThread(t)
-        setPosts(p)
+        setThread(t as Thread)
+        setPosts(p as Post[])
       } catch {
         setThread(null)
       } finally {
@@ -38,7 +69,7 @@ export function ThreadView({ threadId }: Props) {
   async function handleReply(e: React.FormEvent) {
     e.preventDefault()
     if (!reply.trim()) return setReplyError('Reply cannot be empty.')
-    if (!user || !profile) return setReplyError('You must be signed in to reply.')
+    if (!user) return setReplyError('You must be signed in to reply.')
     setSubmitting(true)
     setReplyError('')
 
@@ -52,7 +83,7 @@ export function ThreadView({ threadId }: Props) {
         authorId: user.id,
       })
       const updated = await getPosts(threadId)
-      setPosts(updated)
+      setPosts(updated as Post[])
       setReply('')
     } catch {
       setReplyError('Failed to post reply. Please try again.')
@@ -61,11 +92,11 @@ export function ThreadView({ threadId }: Props) {
     }
   }
 
-  async function handleMarkSolved(postId: string) {
+  async function handleMarkSolved() {
     if (!thread) return
     const newState = !thread.is_solved
     await markThreadSolved(threadId, newState)
-    setThread((t: any) => ({ ...t, is_solved: newState }))
+    setThread(t => t ? { ...t, is_solved: newState } : null)
   }
 
   if (loading) {
@@ -90,7 +121,6 @@ export function ThreadView({ threadId }: Props) {
 
   const genColors = thread.generation ? GEN_COLORS[thread.generation as Generation] : null
   const threadAuthor = Array.isArray(thread.profiles) ? thread.profiles[0] : thread.profiles
-  const isThreadAuthor = user?.id && threadAuthor?.id === user.id
 
   return (
     <div>
@@ -113,7 +143,8 @@ export function ThreadView({ threadId }: Props) {
       <div className="mb-6 pb-5 border-b border-gray-100">
         <div className="flex items-center gap-2 mb-2 flex-wrap">
           {genColors && (
-            <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ background: genColors.bg, color: genColors.text }}>
+            <span className="text-xs font-semibold px-2 py-0.5 rounded-full"
+              style={{ background: genColors.bg, color: genColors.text }}>
               {thread.generation}
             </span>
           )}
@@ -138,37 +169,29 @@ export function ThreadView({ threadId }: Props) {
       </div>
 
       {/* Posts */}
-      <div className="space-y-0 divide-y divide-gray-100 mb-8">
-        {posts.map((post: any, idx: number) => {
+      <div className="divide-y divide-gray-100 mb-8">
+        {posts.map((post) => {
           const postAuthor = Array.isArray(post.profiles) ? post.profiles[0] : post.profiles
           const ytId = post.youtube_url ? extractYouTubeId(post.youtube_url) : null
-          const isOp = post.is_op
-          const isAuthor = user?.id && postAuthor?.id === user.id
 
           return (
             <div key={post.id} className="flex gap-4 py-5">
-              {/* Avatar */}
               <div className="flex flex-col items-center gap-1 flex-shrink-0">
                 <div className="w-9 h-9 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 text-sm font-semibold">
                   {postAuthor?.username?.substring(0, 2).toUpperCase() ?? '??'}
                 </div>
-                {isOp && (
+                {post.is_op && (
                   <span className="text-[9px] font-medium text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded">OP</span>
                 )}
               </div>
-
-              {/* Content */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-2">
                   <span className="text-sm font-medium text-gray-800">{postAuthor?.username ?? 'Unknown'}</span>
                   <span className="text-xs text-gray-400">{formatRelativeTime(post.created_at)}</span>
                 </div>
-
                 <div className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap mb-3">
                   {post.body}
                 </div>
-
-                {/* YouTube embed */}
                 {ytId && (
                   <div className="rounded-xl overflow-hidden mb-3 max-w-lg">
                     <iframe
@@ -179,9 +202,7 @@ export function ThreadView({ threadId }: Props) {
                     />
                   </div>
                 )}
-
-                {/* Post actions */}
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3">
                   {user && (
                     <button
                       onClick={() => setReply(`@${postAuthor?.username} `)}
@@ -190,13 +211,11 @@ export function ThreadView({ threadId }: Props) {
                       <CornerDownRight size={11} /> Reply
                     </button>
                   )}
-                  {user && (isAuthor || isThreadAuthor) && !isOp && (
+                  {user && !post.is_op && (
                     <button
-                      onClick={() => handleMarkSolved(post.id)}
+                      onClick={handleMarkSolved}
                       className={`text-xs flex items-center gap-1 transition-colors ${
-                        thread.is_solved
-                          ? 'text-green-600 hover:text-green-700'
-                          : 'text-gray-400 hover:text-green-600'
+                        thread.is_solved ? 'text-green-600 hover:text-green-700' : 'text-gray-400 hover:text-green-600'
                       }`}
                     >
                       <CheckCircle size={11} />
@@ -222,9 +241,7 @@ export function ThreadView({ threadId }: Props) {
               rows={5}
               className="w-full text-sm border border-gray-200 rounded-lg px-3.5 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent resize-none mb-3"
             />
-            {replyError && (
-              <p className="text-xs text-red-500 mb-3">{replyError}</p>
-            )}
+            {replyError && <p className="text-xs text-red-500 mb-3">{replyError}</p>}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5 text-xs text-gray-400">
                 <Youtube size={13} />

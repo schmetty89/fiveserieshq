@@ -9,6 +9,18 @@ import { getThreads } from '@/lib/forum-data'
 import { useAuth } from '@/components/auth/AuthProvider'
 import { Generation } from '@/types'
 
+interface ThreadRow {
+  id: string
+  title: string
+  generation?: string
+  category?: string
+  is_pinned: boolean
+  is_solved: boolean
+  reply_count: number
+  last_reply_at: string
+  profiles: { username: string; avatar_url?: string } | { username: string; avatar_url?: string }[]
+}
+
 interface Props {
   gen?: string
   cat?: string
@@ -17,7 +29,7 @@ interface Props {
 
 export function SubforumView({ gen, cat, region }: Props) {
   const { user } = useAuth()
-  const [threads, setThreads] = useState<any[]>([])
+  const [threads, setThreads] = useState<ThreadRow[]>([])
   const [loading, setLoading] = useState(true)
 
   const isRegional = !!region
@@ -37,7 +49,7 @@ export function SubforumView({ gen, cat, region }: Props) {
           category: cat,
           regionalSubforum: region,
         })
-        setThreads(data)
+        setThreads(data as ThreadRow[])
       } catch {
         setThreads([])
       } finally {
@@ -78,10 +90,8 @@ export function SubforumView({ gen, cat, region }: Props) {
       <div className="flex items-center justify-between mb-5 pb-5 border-b border-gray-100">
         <div className="flex items-center gap-3">
           {genColors && (
-            <span
-              className="text-xs font-semibold px-2.5 py-0.5 rounded-full"
-              style={{ background: genColors.bg, color: genColors.text }}
-            >
+            <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full"
+              style={{ background: genColors.bg, color: genColors.text }}>
               {gen}
             </span>
           )}
@@ -106,15 +116,10 @@ export function SubforumView({ gen, cat, region }: Props) {
       {isTechSub && gen && (
         <div className="flex gap-2 flex-wrap mb-5">
           {techCats.map(tc => (
-            <Link
-              key={tc.id}
-              href={`/forums/subforum?gen=${gen}&cat=${tc.id}`}
+            <Link key={tc.id} href={`/forums/subforum?gen=${gen}&cat=${tc.id}`}
               className={`text-xs px-3 py-1.5 rounded-full border transition-all ${
-                tc.id === cat
-                  ? 'bg-gray-900 text-white border-gray-900'
-                  : 'border-gray-200 text-gray-500 hover:border-gray-300'
-              }`}
-            >
+                tc.id === cat ? 'bg-gray-900 text-white border-gray-900' : 'border-gray-200 text-gray-500 hover:border-gray-300'
+              }`}>
               {tc.icon} {tc.name}
             </Link>
           ))}
@@ -125,15 +130,10 @@ export function SubforumView({ gen, cat, region }: Props) {
       {isRegional && (
         <div className="flex gap-2 flex-wrap mb-5">
           {REGIONAL_SUBFORUMS.map(r => (
-            <Link
-              key={r.id}
-              href={`/forums/subforum?region=${r.id}`}
+            <Link key={r.id} href={`/forums/subforum?region=${r.id}`}
               className={`text-xs px-3 py-1.5 rounded-full border transition-all ${
-                r.id === region
-                  ? 'bg-gray-900 text-white border-gray-900'
-                  : 'border-gray-200 text-gray-500 hover:border-gray-300'
-              }`}
-            >
+                r.id === region ? 'bg-gray-900 text-white border-gray-900' : 'border-gray-200 text-gray-500 hover:border-gray-300'
+              }`}>
               {r.flag} {r.name}
             </Link>
           ))}
@@ -153,34 +153,24 @@ export function SubforumView({ gen, cat, region }: Props) {
           <p className="text-sm font-medium text-gray-500 mb-1">No threads yet</p>
           <p className="text-xs text-gray-400 mb-4">Be the first to start a discussion.</p>
           {user ? (
-            <Link
-              href={`/forums/new?gen=${gen ?? ''}&cat=${cat ?? ''}&region=${region ?? ''}`}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-900 text-white text-sm font-medium"
-            >
+            <Link href={`/forums/new?gen=${gen ?? ''}&cat=${cat ?? ''}&region=${region ?? ''}`}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-900 text-white text-sm font-medium">
               <Edit size={13} /> Start a thread
             </Link>
           ) : (
-            <Link href="/auth/join" className="text-sm text-blue-600 hover:underline">
-              Join to post
-            </Link>
+            <Link href="/auth/join" className="text-sm text-blue-600 hover:underline">Join to post</Link>
           )}
         </div>
       ) : (
         <div className="divide-y divide-gray-100">
-          {threads.map((thread: any) => {
+          {threads.map((thread) => {
             const author = Array.isArray(thread.profiles) ? thread.profiles[0] : thread.profiles
             return (
-              <Link
-                key={thread.id}
-                href={`/forums/thread/${thread.id}`}
-                className="flex items-start gap-3 py-4 group hover:bg-gray-50 -mx-2 px-2 rounded-lg transition-colors"
-              >
-                {/* Avatar */}
+              <Link key={thread.id} href={`/forums/thread/${thread.id}`}
+                className="flex items-start gap-3 py-4 group hover:bg-gray-50 -mx-2 px-2 rounded-lg transition-colors">
                 <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 text-xs font-semibold flex-shrink-0 mt-0.5">
                   {author?.username?.substring(0, 2).toUpperCase() ?? '??'}
                 </div>
-
-                {/* Body */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1 flex-wrap">
                     {thread.is_pinned && (
@@ -204,8 +194,6 @@ export function SubforumView({ gen, cat, region }: Props) {
                     </span>
                   </div>
                 </div>
-
-                {/* Reply count */}
                 <div className="text-right flex-shrink-0 text-xs text-gray-400">
                   <div className="font-medium text-gray-700 text-sm">{thread.reply_count}</div>
                   <div>replies</div>
