@@ -35,7 +35,6 @@ export function ReviewCard({
   }
 
   async function handleReject() {
-    if (!reason.trim()) return
     setLoading('reject')
     await onReject(reason.trim())
     setDone('rejected')
