@@ -54,7 +54,7 @@ export const metadata: Metadata = {
       'The definitive BMW 5 Series community. Forums, builds, technical library, video library, trusted vendors, and events — E34 to G30.',
     images: [
       {
-        url: `${BASE_URL}/api/og`,
+        url: `https://xgfvrlrbeymronphmpii.supabase.co/storage/v1/object/public/hero-images/og-image.png`,
         width: 1200,
         height: 630,
         alt: 'FiveSeriesHQ — The BMW 5 Series Community',
@@ -66,7 +66,7 @@ export const metadata: Metadata = {
     title: 'FiveSeriesHQ — The BMW 5 Series Community',
     description:
       'The definitive BMW 5 Series community — forums, builds, technical library, and more. E34 to G30.',
-    images: [`${BASE_URL}/api/og`],
+    images: [`https://xgfvrlrbeymronphmpii.supabase.co/storage/v1/object/public/hero-images/og-image.png`],
   },
   alternates: {
     canonical: BASE_URL,

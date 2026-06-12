@@ -12,7 +12,7 @@ export const metadata: Metadata = {
     title: 'FiveSeriesHQ — The BMW 5 Series Community',
     description: 'The definitive BMW 5 Series community — E34 to G30.',
     url: 'https://fiveserieshq.com',
-    images: [{ url: 'https://fiveserieshq.com/api/og', width: 1200, height: 630 }],
+    images: [{ url: 'https://xgfvrlrbeymronphmpii.supabase.co/storage/v1/object/public/hero-images/og-image.png', width: 1200, height: 630 }],
   },
 }
 
