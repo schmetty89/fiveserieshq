@@ -4,8 +4,8 @@ import { ForumIndex } from '@/components/forums/ForumIndex'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Forums',
-  description: 'BMW 5 Series community forums — E34, E39, E60, F10, G30 and regional discussion.',
+  title: 'Forums — BMW 5 Series Discussion',
+  description: 'BMW 5 Series community forums covering all generations — E34, E39, E60, F10, G30. Technical help, builds, general discussion, marketplace, and regional subforums.',
 }
 
 export default function ForumsPage() {

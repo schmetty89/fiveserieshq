@@ -4,8 +4,8 @@ import { VendorDirectory } from '@/components/vendors/VendorDirectory'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Trusted vendors',
-  description: 'Curated BMW 5 Series parts suppliers, tuners, and independent shops — approved by the FiveSeriesHQ community.',
+  title: 'Trusted Vendors — BMW 5 Series Parts & Shops',
+  description: 'Hand-curated directory of BMW 5 Series parts suppliers, tuners, and independent shops. Every vendor is reviewed and approved. Rated by the community.',
 }
 
 export default function VendorsPage() {

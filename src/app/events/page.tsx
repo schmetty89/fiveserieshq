@@ -4,8 +4,8 @@ import { EventsCalendar } from '@/components/events/EventsCalendar'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Events',
-  description: 'BMW 5 Series meetups, track days, and shows — find events near you or submit your own.',
+  title: 'Events — BMW 5 Series Meetups & Track Days',
+  description: 'Find BMW 5 Series meetups, track days, and car shows near you. Submit your own event and connect with owners in your region.',
 }
 
 export default function EventsPage() {

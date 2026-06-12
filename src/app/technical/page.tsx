@@ -4,8 +4,8 @@ import { TechnicalInfo } from '@/components/technical/TechnicalInfo'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Technical info',
-  description: 'BMW 5 Series technical database — service manuals, wiring diagrams, maintenance guides, and performance references for E34 through G30.',
+  title: 'Technical Info — BMW 5 Series Database',
+  description: 'The most comprehensive BMW 5 Series technical library online. Factory service manuals, wiring diagrams, maintenance guides, and performance documentation for every generation.',
 }
 
 export default function TechnicalPage() {

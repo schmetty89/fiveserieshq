@@ -4,8 +4,8 @@ import { VideoLibrary } from '@/components/videos/VideoLibrary'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Video library',
-  description: 'BMW 5 Series community video library — DIY guides, build diaries, reviews, and track day footage across all generations.',
+  title: 'Video Library — BMW 5 Series',
+  description: 'The best BMW 5 Series videos in one place. DIY guides, build progress, reviews, and track footage — curated and organized by generation from E34 to G30.',
 }
 
 export default function VideosPage() {
