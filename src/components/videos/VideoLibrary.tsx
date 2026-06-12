@@ -1,11 +1,11 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { Search, Play, Heart, Youtube, ChevronRight } from 'lucide-react'
+import { Search, Play, Heart, Youtube } from 'lucide-react'
 import { getVideos } from '@/lib/video-data'
 import { VIDEO_CATEGORIES } from '@/lib/video-config'
 import { GEN_COLORS } from '@/lib/forum-config'
-import { getYouTubeThumbnail } from '@/lib/utils'
+import Image from 'next/image'
 import { GENERATIONS, Generation } from '@/types'
 import { useAuth } from '@/components/auth/AuthProvider'
 import { SubmitVideoModal } from './SubmitVideoModal'
@@ -43,13 +43,16 @@ function VideoCard({ video }: { video: Video }) {
             allowFullScreen
           />
         ) : (
-          <>
-            <img
-              src={getYouTubeThumbnail(video.youtube_id, 'mq')}
-              alt={video.title}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-              onError={e => { (e.target as HTMLImageElement).src = '' }}
-            />
+            <>
+            <div className="relative w-full h-full">
+              <Image
+                src={`https://img.youtube.com/vi/${video.youtube_id}/mqdefault.jpg`}
+                alt={video.title}
+                fill
+                className="object-cover group-hover:scale-105 transition-transform duration-300"
+                unoptimized
+              />
+            </div>
             <div className="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition-colors flex items-center justify-center">
               <div className="w-10 h-10 rounded-full bg-white/90 flex items-center justify-center shadow-lg">
                 <Play size={16} className="text-gray-900 ml-0.5" />
@@ -104,7 +107,7 @@ function VideoCard({ video }: { video: Video }) {
 }
 
 export function VideoLibrary() {
-  const { user } = useAuth()
+  const { } = useAuth()
   const [videos, setVideos] = useState<Video[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
