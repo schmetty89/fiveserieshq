@@ -87,48 +87,12 @@ export default function JoinPage() {
 
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-2.5">
-                        <div className="w-9 h-9 rounded-full bg-[#0055b3] flex items-center justify-center flex-shrink-0">
+            <div className="w-9 h-9 rounded-full bg-[#0055b3] flex items-center justify-center flex-shrink-0">
               <span className="text-white font-black text-[15px]" style={{ fontStyle: 'italic' }}>M</span>
             </div>
             <div className="text-left leading-tight">
               <div className="text-sm font-semibold text-gray-900 tracking-wide">The Five Series HQ</div>
             </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Confirm password</label>
-              <input
-                type={showPassword ? 'text' : 'password'}
-                name="confirmPassword"
-                value={form.confirmPassword}
-                onChange={handleChange}
-                placeholder="Repeat your password"
-                autoComplete="new-password"
-                className="w-full px-3.5 py-2.5 rounded-lg border border-gray-200 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all"
-              />
-            </div>
-
-            <p className="text-xs text-gray-400 leading-relaxed">
-              By joining you agree to our community rules. This is a BMW 5 Series enthusiast community — keep it respectful and on-topic.
-            </p>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-gray-900 text-white text-sm font-medium hover:bg-gray-700 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
-            >
-              {loading ? (
-                <><Loader2 size={15} className="animate-spin" /> Creating account...</>
-              ) : (
-                'Create account'
-              )}
-            </button>
-          </form>
-        </div>
-
-        <p className="text-center text-sm text-gray-500 mt-5">
-          Already have an account?{' '}
-          <Link href="/auth/login" className="font-medium text-gray-900 hover:underline">
-            Sign in
           </Link>
         </p>
       </div>
