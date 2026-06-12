@@ -25,8 +25,8 @@ const CAR_IMAGES: Record<Generation, string> = {
   G30: 'https://xgfvrlrbeymronphmpii.supabase.co/storage/v1/object/public/hero-images/G30%20M5.png',
 }
 
-// Nürburgring M5 background
-const BG_IMAGE = 'https://images.unsplash.com/photo-1504215680853-026ed2a45def?w=1600&q=85&fit=crop'
+// Nürburgring background
+const BG_IMAGE = 'https://xgfvrlrbeymronphmpii.supabase.co/storage/v1/object/public/hero-images/HOMEPAGE%20BACKGROUND.png'
 
 export function HeroSection() {
   const [hovered, setHovered] = useState<Generation | null>(null)
