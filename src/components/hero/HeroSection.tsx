@@ -52,7 +52,7 @@ export function HeroSection() {
         <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a]/70 via-[#0a0a0a]/20 to-[#0a0a0a]/85" />
       </div>
 
-      <div className="relative z-10 flex flex-col" style={{ minHeight: '540px' }}>
+      <div className="relative z-10 flex flex-col" style={{ minHeight: '620px' }}>
 
         {/* Hero copy */}
         <div className="flex-1 flex flex-col items-center justify-center pt-14 pb-4 px-6 text-center">
@@ -101,7 +101,7 @@ export function HeroSection() {
         </div>
 
         {/* Cars lineup */}
-        <div className="flex items-end justify-center gap-1 px-4 pb-0" style={{ height: '260px' }}>
+        <div className="flex items-end justify-center gap-1 px-4 pb-0" style={{ height: '338px' }}>
           {GENERATIONS.map(gen => {
             const isDimmed = active !== null && active !== gen
             return (
@@ -111,7 +111,7 @@ export function HeroSection() {
                 onMouseLeave={() => setHovered(null)}
                 onClick={() => handleCarClick(gen)}
                 aria-label={`Explore BMW ${gen} — ${GENERATION_YEARS[gen]}`}
-                className="flex-1 max-w-[150px] flex flex-col items-center justify-end cursor-pointer group relative"
+                className="flex-1 max-w-[195px] flex flex-col items-center justify-end cursor-pointer group relative"
                 style={{
                   transform: active === gen
                     ? 'translateY(-14px) scale(1.03)'
@@ -136,8 +136,8 @@ export function HeroSection() {
                   <Image
                     src={CAR_IMAGES[gen]}
                     alt={`BMW ${gen} M5`}
-                    width={300}
-                    height={180}
+                    width={390}
+                    height={234}
                     className="w-full h-auto object-cover object-bottom"
                     priority={gen === 'E39'}
                   />
