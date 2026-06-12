@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { X, Loader2, AlertCircle, CheckCircle } from 'lucide-react'
-import { GENERATIONS, Generation } from '@/types'
+import { GENERATIONS } from '@/types'
 import { MAINTENANCE_SYSTEMS, PERFORMANCE_SYSTEMS, DOC_CATEGORIES } from '@/lib/technical-config'
 import { submitTechDocument, submitTechArticle } from '@/lib/technical-data'
 import { useAuth } from '@/components/auth/AuthProvider'

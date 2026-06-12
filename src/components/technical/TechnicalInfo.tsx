@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Upload, CheckCircle, Eye, Download, ChevronRight, ArrowLeft, FileText, BookOpen } from 'lucide-react'
 import { GENERATIONS, Generation } from '@/types'
-import { GENERATION_YEARS } from '@/types'
 import { GEN_COLORS } from '@/lib/forum-config'
 import { MAINTENANCE_SYSTEMS, PERFORMANCE_SYSTEMS, TechSection } from '@/lib/technical-config'
 import { getTechDocuments, getTechArticles, getTechArticle } from '@/lib/technical-data'
@@ -109,7 +108,7 @@ export function TechnicalInfo() {
       <div className="grid grid-cols-1 lg:grid-cols-[240px_1fr] gap-8">
         <GenSidebar activeGen={activeGen} setActiveGen={g => { setActiveGen(g); setActiveArticleId(null) }}
           activeSection={activeSection} setActiveSection={s => { setActiveSection(s); setActiveArticleId(null) }}
-          genColors={genColors} onSubmit={() => setShowSubmitModal(true)} user={!!user} />
+          onSubmit={() => setShowSubmitModal(true)} user={!!user} />
         <div>
           <button onClick={() => setActiveArticleId(null)}
             className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 mb-5 transition-colors">
@@ -156,7 +155,7 @@ export function TechnicalInfo() {
     <div className="grid grid-cols-1 lg:grid-cols-[240px_1fr] gap-8">
       <GenSidebar activeGen={activeGen} setActiveGen={g => { setActiveGen(g); setActiveSystem(null) }}
         activeSection={activeSection} setActiveSection={s => { setActiveSection(s); setActiveSystem(null) }}
-        genColors={genColors} onSubmit={() => setShowSubmitModal(true)} user={!!user} />
+        onSubmit={() => setShowSubmitModal(true)} user={!!user} />
 
       <div>
         {/* Header */}
@@ -329,12 +328,11 @@ export function TechnicalInfo() {
   )
 }
 
-function GenSidebar({ activeGen, setActiveGen, activeSection, setActiveSection, genColors, onSubmit, user }: {
+function GenSidebar({ activeGen, setActiveGen, activeSection, setActiveSection, onSubmit, user }: {
   activeGen: Generation
   setActiveGen: (g: Generation) => void
   activeSection: TechSection
   setActiveSection: (s: TechSection) => void
-  genColors: { bg: string; text: string }
   onSubmit: () => void
   user: boolean
 }) {
