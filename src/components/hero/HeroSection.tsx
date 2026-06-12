@@ -16,13 +16,18 @@ const GENERATION_MODELS: Record<Generation, string[]> = {
   G30: ['520i', '523i', '530i', '540i', '545e', '550i', 'M550i', 'M5', 'M5 Competition', 'M5 CS'],
 }
 
-// Real BMW car images per generation — Unsplash free use
+// Per-generation M5 photos — Wikimedia Commons (free, CC licensed)
 const CAR_IMAGES: Record<Generation, string> = {
-  E34: 'https://images.unsplash.com/photo-1555215695-3004980ad54e?w=500&q=85&fit=crop',
-  E39: 'https://images.unsplash.com/photo-1617814076367-b759c7d7e738?w=500&q=85&fit=crop',
-  E60: 'https://images.unsplash.com/photo-1580273916550-e323be2ae537?w=500&q=85&fit=crop',
-  F10: 'https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=500&q=85&fit=crop',
-  G30: 'https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=500&q=85&fit=crop',
+  // E34 M5 — 1991 example, silver/black
+  E34: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7e/Bmw-e34-m5-wikipedia.jpg/640px-Bmw-e34-m5-wikipedia.jpg',
+  // E39 M5 — titansilber, classic press angle
+  E39: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/BMW_E39_M5_--_09-09-2010.jpg/640px-BMW_E39_M5_--_09-09-2010.jpg',
+  // E60 M5 — V10 sedan
+  E60: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/BMW_M5_E60_2007.jpg/640px-BMW_M5_E60_2007.jpg',
+  // F10 M5 — Competition
+  F10: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/Blue_BMW_M5_%28F10%29_fr.jpg/640px-Blue_BMW_M5_%28F10%29_fr.jpg',
+  // G30 M5 — Competition F90
+  G30: 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/68/2018_BMW_M5_in_Marina_Bay_Blue%2C_front_8.28.19.jpg/640px-2018_BMW_M5_in_Marina_Bay_Blue%2C_front_8.28.19.jpg',
 }
 
 // Nürburgring M5 background
