@@ -30,7 +30,6 @@ export default function JoinPage() {
     e.preventDefault()
     setError('')
 
-    // Validation
     if (!form.username.trim()) return setError('Please choose a username.')
     if (form.username.length < 3) return setError('Username must be at least 3 characters.')
     if (!/^[a-zA-Z0-9_.-]+$/.test(form.username)) return setError('Username can only contain letters, numbers, underscores, dots, and dashes.')
@@ -41,7 +40,6 @@ export default function JoinPage() {
     setLoading(true)
 
     try {
-      // Check username availability
       const { data: existing } = await supabase
         .from('profiles')
         .select('username')
@@ -54,7 +52,6 @@ export default function JoinPage() {
         return
       }
 
-      // Sign up
       const { error: signUpError } = await supabase.auth.signUp({
         email: form.email,
         password: form.password,
@@ -78,40 +75,16 @@ export default function JoinPage() {
     }
   }
 
+  // After successful signup, redirect to verify page
   if (success) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4">
-        <div className="w-full max-w-md">
-          <div className="bg-white rounded-2xl border border-gray-100 p-8 text-center shadow-sm">
-            <div className="w-14 h-14 rounded-full bg-green-50 flex items-center justify-center mx-auto mb-5">
-              <svg className="w-7 h-7 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-            </div>
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">Check your email</h2>
-            <p className="text-sm text-gray-500 leading-relaxed mb-2">
-              We sent a verification link to <span className="font-medium text-gray-700">{form.email}</span>.
-            </p>
-            <p className="text-sm text-gray-500 leading-relaxed mb-6">
-              Click the link in that email to verify your account and start posting. You can browse the site in the meantime.
-            </p>
-            <Link
-              href="/"
-              className="inline-flex items-center justify-center w-full px-4 py-2.5 rounded-lg bg-gray-900 text-white text-sm font-medium hover:bg-gray-700 transition-colors"
-            >
-              Back to FiveSeriesHQ
-            </Link>
-          </div>
-        </div>
-      </div>
-    )
+    router.push('/auth/verify')
+    return null
   }
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4">
       <div className="w-full max-w-md">
 
-        {/* Logo */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-full border-2 border-[#0f0f0f] grid grid-cols-2 overflow-hidden">
@@ -129,11 +102,9 @@ export default function JoinPage() {
           <p className="text-sm text-gray-500">Join the BMW 5 Series community</p>
         </div>
 
-        {/* Form card */}
         <div className="bg-white rounded-2xl border border-gray-100 p-8 shadow-sm">
           <form onSubmit={handleSubmit} className="space-y-4">
 
-            {/* Error */}
             {error && (
               <div className="flex items-start gap-2.5 bg-red-50 border border-red-100 rounded-lg px-3.5 py-3">
                 <AlertCircle size={15} className="text-red-500 flex-shrink-0 mt-0.5" />
@@ -141,11 +112,8 @@ export default function JoinPage() {
               </div>
             )}
 
-            {/* Username */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                Username
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Username</label>
               <input
                 type="text"
                 name="username"
@@ -158,11 +126,8 @@ export default function JoinPage() {
               <p className="text-xs text-gray-400 mt-1">Letters, numbers, underscores, dots, and dashes only.</p>
             </div>
 
-            {/* Email */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                Email address
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Email address</label>
               <input
                 type="email"
                 name="email"
@@ -172,14 +137,11 @@ export default function JoinPage() {
                 autoComplete="email"
                 className="w-full px-3.5 py-2.5 rounded-lg border border-gray-200 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all"
               />
-              <p className="text-xs text-gray-400 mt-1">You'll need to verify this before you can post.</p>
+              <p className="text-xs text-gray-400 mt-1">You&apos;ll need to verify this before you can post.</p>
             </div>
 
-            {/* Password */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                Password
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Password</label>
               <div className="relative">
                 <input
                   type={showPassword ? 'text' : 'password'}
@@ -201,11 +163,8 @@ export default function JoinPage() {
               </div>
             </div>
 
-            {/* Confirm password */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                Confirm password
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Confirm password</label>
               <input
                 type={showPassword ? 'text' : 'password'}
                 name="confirmPassword"
@@ -217,12 +176,10 @@ export default function JoinPage() {
               />
             </div>
 
-            {/* Terms note */}
             <p className="text-xs text-gray-400 leading-relaxed">
               By joining you agree to our community rules. This is a BMW 5 Series enthusiast community — keep it respectful and on-topic.
             </p>
 
-            {/* Submit */}
             <button
               type="submit"
               disabled={loading}
@@ -237,7 +194,6 @@ export default function JoinPage() {
           </form>
         </div>
 
-        {/* Sign in link */}
         <p className="text-center text-sm text-gray-500 mt-5">
           Already have an account?{' '}
           <Link href="/auth/login" className="font-medium text-gray-900 hover:underline">
