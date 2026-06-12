@@ -41,7 +41,7 @@ interface ArticleDetail extends TechArticle {
 }
 
 export function TechnicalInfo() {
-  const { user } = useAuth()
+  const { user, isTier2 } = useAuth()
   const [activeGen, setActiveGen] = useState<Generation>('E39')
   const [activeSection, setActiveSection] = useState<TechSection>('documents')
   const [activeSystem, setActiveSystem] = useState<string | null>(null)
@@ -188,7 +188,7 @@ export function TechnicalInfo() {
         {/* ── Documents section ── */}
         {activeSection === 'documents' && (
           loading ? <LoadingSkeleton /> : docs.length === 0 ? (
-            <EmptyState label="No documents yet" sub="Be the first to submit a factory manual or wiring diagram." onSubmit={user ? () => setShowSubmitModal(true) : undefined} />
+            <EmptyState label="No documents yet" sub="Be the first to submit a factory manual or wiring diagram." onSubmit={user && isTier2 ? () => setShowSubmitModal(true) : undefined} />
           ) : (
             <div className="space-y-6">
               {docCategories.map(cat => (
@@ -211,14 +211,22 @@ export function TechnicalInfo() {
                                 : <span className="text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded">Pending</span>}
                             </div>
                             <div className="flex gap-2">
-                              <a href={doc.file_url} target="_blank" rel="noopener noreferrer"
-                                className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-md bg-gray-900 text-white hover:bg-gray-700 transition-colors">
-                                <Download size={11} /> Download
-                              </a>
-                              <a href={doc.file_url} target="_blank" rel="noopener noreferrer"
-                                className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-md border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors">
-                                <Eye size={11} /> Preview
-                              </a>
+                              {doc.file_url && doc.file_url !== '#pending' ? (
+                                <>
+                                  <a href={doc.file_url} target="_blank" rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-md bg-gray-900 text-white hover:bg-gray-700 transition-colors">
+                                    <Download size={11} /> Download
+                                  </a>
+                                  <a href={doc.file_url} target="_blank" rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-md border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors">
+                                    <Eye size={11} /> Preview
+                                  </a>
+                                </>
+                              ) : (
+                                <span className="text-xs text-amber-600 bg-amber-50 px-2.5 py-1.5 rounded-md border border-amber-100">
+                                  File upload pending
+                                </span>
+                              )}
                             </div>
                           </div>
                         </div>
@@ -275,7 +283,7 @@ export function TechnicalInfo() {
               <EmptyState
                 label="No articles yet for this system"
                 sub="Be the first to contribute a guide or document."
-                onSubmit={user ? () => setShowSubmitModal(true) : undefined}
+                onSubmit={user && isTier2 ? () => setShowSubmitModal(true) : undefined}
               />
             ) : (
               <div className="divide-y divide-gray-100">
