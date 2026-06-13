@@ -6,7 +6,8 @@ export async function getTechDocuments(generation: string) {
     .from('tech_documents')
     .select('*')
     .eq('generation', generation)
-    .order('verified', { ascending: false })
+    .eq('verified', true)
+    .eq('rejected', false)
     .order('created_at', { ascending: false })
   if (error) return []
   return data ?? []
@@ -31,7 +32,8 @@ export async function getTechArticles({
     `)
     .eq('generation', generation)
     .eq('section', section)
-    .order('verified', { ascending: false })
+    .eq('verified', true)
+    .eq('rejected', false)
     .order('view_count', { ascending: false })
 
   if (system) query = query.eq('system', system)
