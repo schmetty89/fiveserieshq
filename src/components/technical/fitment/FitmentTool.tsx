@@ -183,7 +183,7 @@ export function FitmentTool() {
         {/* Generation header */}
         <div
           className="rounded-2xl p-5 mb-6 border"
-          style={{ background: colors.bg, borderColor: colors.border }}
+          style={{ background: colors.bg }}
         >
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
@@ -210,14 +210,14 @@ export function FitmentTool() {
             <button
               onClick={() => setShowOem(v => !v)}
               className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border transition-all flex-shrink-0"
-              style={{ borderColor: colors.border, color: colors.text, background: 'rgba(255,255,255,0.5)' }}
+             style={{ color: colors.text, background: 'rgba(255,255,255,0.5)' }}
             >
               OEM fitments <ChevronDown size={12} className={`transition-transform ${showOem ? 'rotate-180' : ''}`} />
             </button>
           </div>
 
           {showOem && (
-            <div className="mt-4 border-t pt-4" style={{ borderColor: colors.border }}>
+            <div className="mt-4 border-t pt-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {fitment.oemFitments.map((oem, i) => (
                   <div key={i} className="bg-white/60 rounded-xl p-3 text-xs">
