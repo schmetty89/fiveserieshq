@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, Suspense } from 'react'
+import { useSearchParams, useRouter } from 'next/navigation'
 import { Upload, CheckCircle, Eye, Download, ChevronRight, ArrowLeft, FileText, BookOpen } from 'lucide-react'
 import { GENERATIONS, Generation } from '@/types'
 import { GEN_COLORS } from '@/lib/forum-config'
@@ -40,12 +41,29 @@ interface ArticleDetail extends TechArticle {
   file_url?: string
 }
 
-export function TechnicalInfo() {
+function TechnicalInfoInner() {
   const { user, isTier2 } = useAuth()
-  const [activeGen, setActiveGen] = useState<Generation>('E39')
-  const [activeSection, setActiveSection] = useState<TechSection>('documents')
+  const searchParams = useSearchParams()
+  const router = useRouter()
+
+  const activeGen = (searchParams.get('gen') as Generation) || 'E39'
+  const activeSection = (searchParams.get('section') as TechSection) || 'documents'
   const [activeSystem, setActiveSystem] = useState<string | null>(null)
   const [activeArticleId, setActiveArticleId] = useState<string | null>(null)
+
+  function setActiveGen(gen: Generation) {
+    const params = new URLSearchParams(searchParams.toString())
+    params.set('gen', gen)
+    params.set('section', activeSection)
+    router.push(`/technical?${params.toString()}`, { scroll: false })
+  }
+
+  function setActiveSection(section: TechSection) {
+    const params = new URLSearchParams(searchParams.toString())
+    params.set('gen', activeGen)
+    params.set('section', section)
+    router.push(`/technical?${params.toString()}`, { scroll: false })
+  }
 
   const [docs, setDocs] = useState<TechDoc[]>([])
   const [articles, setArticles] = useState<TechArticle[]>([])
@@ -333,6 +351,14 @@ export function TechnicalInfo() {
         />
       )}
     </div>
+  )
+}
+
+export function TechnicalInfo() {
+  return (
+    <Suspense fallback={<div className="h-96 bg-gray-50 animate-pulse rounded-xl" />}>
+      <TechnicalInfoInner />
+    </Suspense>
   )
 }
 
