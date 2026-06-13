@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { Upload, CheckCircle, Eye, Download, ChevronRight, ArrowLeft, FileText, BookOpen } from 'lucide-react'
+import Link from 'next/link'
 import { GENERATIONS, Generation } from '@/types'
 import { GEN_COLORS } from '@/lib/forum-config'
 import { MAINTENANCE_SYSTEMS, PERFORMANCE_SYSTEMS, TechSection } from '@/lib/technical-config'
@@ -202,6 +203,25 @@ function TechnicalInfoInner() {
             </button>
           )}
         </div>
+
+        {/* ── Fitment tool callout (documents section only) ── */}
+        {activeSection === 'documents' && (
+          <Link
+            href={`/technical/fitment?gen=${activeGen}`}
+            className="flex items-center justify-between gap-4 p-4 mb-6 rounded-xl border border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-colors group"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 text-lg" style={{ background: genColors.bg }}>
+                🔩
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-900">Rim fitment guide</p>
+                <p className="text-xs text-gray-400">Bolt patterns, offset ranges, OEM specs, and community-verified wheel combos for the {activeGen}</p>
+              </div>
+            </div>
+            <ChevronRight size={16} className="text-gray-300 group-hover:text-gray-400 flex-shrink-0 transition-colors" />
+          </Link>
+        )}
 
         {/* ── Documents section ── */}
         {activeSection === 'documents' && (
@@ -414,8 +434,18 @@ function GenSidebar({ activeGen, setActiveGen, activeSection, setActiveSection, 
         </button>
       ))}
 
+      <div className="pt-2">
+        <Link
+          href={`/technical/fitment`}
+          className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition-colors"
+        >
+          <span>🔩</span>
+          <span>Rim fitment</span>
+        </Link>
+      </div>
+
       {user && (
-        <div className="pt-4">
+        <div className="pt-2">
           <button onClick={onSubmit}
             className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition-colors border border-dashed border-gray-200">
             <Upload size={13} /> Submit content
