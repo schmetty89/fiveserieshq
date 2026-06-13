@@ -46,10 +46,10 @@ export function HeroSection() {
           src={BG_IMAGE}
           alt="BMW M5 racing at the Nürburgring"
           fill
-          className="object-cover object-center opacity-40"
+          className="object-cover object-center opacity-75"
           priority
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a]/70 via-[#0a0a0a]/20 to-[#0a0a0a]/85" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a]/40 via-[#0a0a0a]/10 to-[#0a0a0a]/60" />
       </div>
 
       <div className="relative z-10 flex flex-col" style={{ minHeight: '680px' }}>
