@@ -38,6 +38,7 @@ export function SubforumView({ gen, cat, engine, transmission, region }: Props) 
   const [loading, setLoading] = useState(true)
 
   const isRegional = !!region
+  const showCategoryList = !!gen && !cat && !region
   const catInfo = GEN_SUBFORUM_CATS.find(c => c.id === cat)
   const regionInfo = REGIONAL_SUBFORUMS.find(r => r.id === region)
   const genColors = gen ? GEN_COLORS[gen as Generation] : null
@@ -57,6 +58,11 @@ export function SubforumView({ gen, cat, engine, transmission, region }: Props) 
   const subInfo = engineInfo ?? transmissionInfo
 
   useEffect(() => {
+    if (showCategoryList) {
+      setThreads([])
+      setLoading(false)
+      return
+    }
     async function load() {
       setLoading(true)
       try {
@@ -75,10 +81,12 @@ export function SubforumView({ gen, cat, engine, transmission, region }: Props) 
       }
     }
     load()
-  }, [gen, cat, engine, transmission, region])
+  }, [gen, cat, engine, transmission, region, showCategoryList])
 
   const title = isRegional
     ? regionInfo?.name ?? 'Regional'
+    : showCategoryList
+    ? `BMW ${gen}`
     : subInfo
     ? `${catInfo?.name} — ${subInfo.code}`
     : catInfo?.name ?? 'Forum'
@@ -91,6 +99,8 @@ export function SubforumView({ gen, cat, engine, transmission, region }: Props) 
         <ChevronRight size={12} />
         {isRegional ? (
           <span className="text-gray-600">Regional</span>
+        ) : showCategoryList ? (
+          <span className="text-gray-900 font-medium">{gen}</span>
         ) : (
           <>
             <span className="text-gray-600">{gen}</span>
@@ -108,8 +118,12 @@ export function SubforumView({ gen, cat, engine, transmission, region }: Props) 
             )}
           </>
         )}
-        <ChevronRight size={12} />
-        <span className="text-gray-900 font-medium">{subInfo ? subInfo.code : title}</span>
+        {!showCategoryList && (
+          <>
+            <ChevronRight size={12} />
+            <span className="text-gray-900 font-medium">{subInfo ? subInfo.code : title}</span>
+          </>
+        )}
       </div>
 
       {/* Header */}
@@ -128,7 +142,7 @@ export function SubforumView({ gen, cat, engine, transmission, region }: Props) 
           )}
           <h1 className="text-xl font-medium text-gray-900">{title}</h1>
         </div>
-        {user && isTier2 && (
+        {user && isTier2 && !showCategoryList && (
           <Link
             href={`/forums/new?gen=${gen ?? ''}&cat=${cat ?? ''}&engine=${engine ?? ''}&transmission=${transmission ?? ''}&region=${region ?? ''}`}
             className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-gray-900 text-white text-sm font-medium hover:bg-gray-700 transition-colors"
@@ -230,8 +244,30 @@ export function SubforumView({ gen, cat, engine, transmission, region }: Props) 
         </div>
       )}
 
-      {/* Thread list */}
-      {loading ? (
+      {/* Category list — generation landing, no category selected yet */}
+      {showCategoryList ? (
+        <div className="divide-y divide-gray-100">
+          {GEN_SUBFORUM_CATS.map(c => (
+            <Link
+              key={c.id}
+              href={`/forums/subforum?gen=${gen}&cat=${c.id}`}
+              className="flex items-center gap-3 py-4 hover:bg-gray-50 -mx-2 px-2 rounded-lg transition-colors group"
+            >
+              <div
+                className="w-9 h-9 rounded-md flex items-center justify-center text-base flex-shrink-0"
+                style={{ background: genColors?.bg }}
+              >
+                <span>{c.icon}</span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-sm font-medium text-gray-700 group-hover:text-gray-900">{c.name}</div>
+                <div className="text-xs text-gray-400">{c.desc}</div>
+              </div>
+              <ChevronRight size={14} className="text-gray-300 group-hover:text-gray-400 flex-shrink-0" />
+            </Link>
+          ))}
+        </div>
+      ) : loading ? (
         <div className="space-y-3">
           {[...Array(6)].map((_, i) => (
             <div key={i} className="h-16 bg-gray-100 rounded-xl animate-pulse" />
