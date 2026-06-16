@@ -15,15 +15,6 @@ const GENERATION_MODELS: Record<Generation, string[]> = {
   G30: ['520i', '523i', '530i', '540i', '545e', '550i', 'M550i', 'M5', 'M5 Competition', 'M5 CS'],
 }
 
-// Per-generation M5 photos — hosted in Supabase storage
-const CAR_IMAGES: Record<Generation, string> = {
-  E34: 'https://xgfvrlrbeymronphmpii.supabase.co/storage/v1/object/public/hero-images/E34%20M5.png',
-  E39: 'https://xgfvrlrbeymronphmpii.supabase.co/storage/v1/object/public/hero-images/E39%20M5.png',
-  E60: 'https://xgfvrlrbeymronphmpii.supabase.co/storage/v1/object/public/hero-images/E60%20M5.png',
-  F10: 'https://xgfvrlrbeymronphmpii.supabase.co/storage/v1/object/public/hero-images/F10%20M5.png',
-  G30: 'https://xgfvrlrbeymronphmpii.supabase.co/storage/v1/object/public/hero-images/G30%20M5.png',
-}
-
 // Nürburgring background
 const BG_IMAGE = 'https://xgfvrlrbeymronphmpii.supabase.co/storage/v1/object/public/hero-images/HOMEPAGE%20BACKGROUND.png?v=2'
 
@@ -65,12 +56,12 @@ export function HeroSection() {
 
   const active = hovered ?? selected
 
-  function handleCarHover(gen: Generation | null) {
+  function handleGenHover(gen: Generation | null) {
     if (gen) lastHoveredGenRef.current = gen
     setHovered(gen)
   }
 
-  function handleCarClick(gen: Generation) {
+  function handleGenClick(gen: Generation) {
     setSelected(gen)
   }
 
@@ -178,73 +169,28 @@ export function HeroSection() {
           )}
         </div>
 
-        {/* Cars lineup */}
-        <div className="flex items-end justify-center gap-1 px-4 pb-0" style={{ height: '338px' }}>
+        {/* Generation selector strip */}
+        <div
+          className="grid grid-cols-5"
+          style={{ background: 'rgba(0,0,0,0.6)' }}
+        >
           {GENERATIONS.map(gen => {
-            const isDimmed = active !== null && active !== gen
+            const isActive = active === gen
+            const color = GEN_COLORS[gen].text
             return (
               <button
                 key={gen}
-                onMouseEnter={() => handleCarHover(gen)}
-                onMouseLeave={() => handleCarHover(null)}
-                onClick={() => handleCarClick(gen)}
+                onMouseEnter={() => handleGenHover(gen)}
+                onMouseLeave={() => handleGenHover(null)}
+                onClick={() => handleGenClick(gen)}
                 aria-label={`Explore BMW ${gen} — ${GENERATION_YEARS[gen]}`}
-                className="flex-1 max-w-[195px] flex flex-col items-center justify-end cursor-pointer group relative"
+                className="py-5 text-sm sm:text-base font-black tracking-[3px] uppercase transition-all duration-300 cursor-pointer"
                 style={{
-                  transform: active === gen
-                    ? 'translateY(-14px) scale(1.03)'
-                    : isDimmed
-                    ? 'translateY(0) scale(0.95)'
-                    : 'translateY(0) scale(1)',
-                  transition: 'transform 0.35s cubic-bezier(0.25,0.46,0.45,0.94)',
+                  color: isActive ? color : 'rgba(255,255,255,0.5)',
+                  textShadow: isActive ? `0 0 8px ${color}, 0 0 18px ${color}` : 'none',
                 }}
               >
-                {/* Car image */}
-                <div
-                  className="w-full relative overflow-hidden"
-                  style={{
-                    filter: isDimmed
-                      ? 'brightness(0.18) saturate(0) contrast(0.8)'
-                      : active === gen
-                      ? 'brightness(1.08) saturate(1.15) contrast(1.05) drop-shadow(0 8px 24px rgba(0,0,0,0.6))'
-                      : 'brightness(0.5) saturate(0.4)',
-                    transition: 'filter 0.35s ease',
-                  }}
-                >
-                  <Image
-                    src={CAR_IMAGES[gen]}
-                    alt={`BMW ${gen} M5`}
-                    width={390}
-                    height={234}
-                    className="w-full h-auto object-cover object-bottom"
-                    priority={gen === 'E39'}
-                  />
-                </div>
-
-                {/* Ground glow */}
-                <div
-                  className="absolute bottom-6 left-1/2 -translate-x-1/2 w-4/5 h-2 rounded-full"
-                  style={{
-                    background: GEN_COLORS[gen].text,
-                    filter: 'blur(6px)',
-                    opacity: active === gen ? 0.65 : 0,
-                    transition: 'opacity 0.35s ease',
-                  }}
-                />
-
-                {/* Gen label */}
-                <div
-                  className="pb-2 pt-1.5 text-[11px] font-bold tracking-[2px] uppercase transition-colors duration-300"
-                  style={{
-                    color: active === gen
-                      ? GEN_COLORS[gen].text
-                      : isDimmed
-                      ? 'rgba(255,255,255,0.08)'
-                      : 'rgba(255,255,255,0.3)',
-                  }}
-                >
-                  {gen}
-                </div>
+                {gen}
               </button>
             )
           })}
