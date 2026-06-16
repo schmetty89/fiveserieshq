@@ -40,7 +40,7 @@ const GENERATION_PLATE_HOTSPOTS: Record<Generation, typeof DEFAULT_PLATE_HOTSPOT
   E34: [
     { label: 'Forums',  href: '/forums',    left: 8.5, top: 57.59, width: 4.875, height: 5.36 },
     { label: 'Builds',  href: '/builds',    left: 35, top: 60.5, width: 6.5, height: 6 },
-    { label: 'Tech',    href: '/technical', left: 68, top: 62.5, width: 9.1,  height: 8 },
+    { label: 'Tech',    href: '/technical', left: 72, top: 62.5, width: 9.1,  height: 8 },
   ],
   E39: DEFAULT_PLATE_HOTSPOTS,
   E60: DEFAULT_PLATE_HOTSPOTS,
