@@ -112,7 +112,7 @@ export function HeroSection() {
           {GENERATION_PLATE_HOTSPOTS[active].map(spot => (
             <Link
               key={spot.label}
-              href={spot.href}
+              href={spot.label === 'Forums' ? `/forums?gen=${active}` : spot.href}
               aria-label={spot.label}
               onMouseEnter={() => setHovered(lastHoveredGenRef.current)}
               onMouseLeave={() => setHovered(null)}
@@ -174,7 +174,7 @@ export function HeroSection() {
             Five Generations. One Community.
           </h1>
           <p
-            className="text-[1.313rem] text-white/50"
+            className="text-[1.969rem] text-white/50"
             style={{ fontVariantCaps: 'small-caps' }}
           >
             The BMW 5 Series has had five generations, countless variants, and millions of passionate owners. It&apos;s never had a hub. Until now.
