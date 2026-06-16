@@ -60,10 +60,10 @@ export interface GarageCar {
 
 // ── Forums ────────────────────────────────────────────────
 export type ForumCategory =
-  | 'powertrain'
+  | 'engine'
+  | 'drivetrain'
   | 'suspension'
   | 'electrical'
-  | 'builds'
   | 'general'
   | 'marketplace'
 
@@ -84,6 +84,7 @@ export interface ForumThread {
   author_username: string
   generation?: Generation
   category: ForumCategory
+  engine?: string
   regional_subforum?: RegionalSubforum
   is_pinned: boolean
   is_solved: boolean

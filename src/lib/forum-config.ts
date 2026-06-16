@@ -2,10 +2,16 @@ import { Generation } from '@/types'
 
 export const GEN_SUBFORUM_CATS = [
   {
-    id: 'powertrain',
-    name: 'Powertrain & drivetrain',
+    id: 'engine',
+    name: 'Engine',
     icon: '⚙️',
-    desc: 'Engine, transmission, cooling, fueling, driveline',
+    desc: 'Engine-specific discussion, by engine code',
+  },
+  {
+    id: 'drivetrain',
+    name: 'Drivetrain',
+    icon: '🔩',
+    desc: 'Transmission, driveshaft, differential, clutch',
   },
   {
     id: 'suspension',
@@ -18,12 +24,6 @@ export const GEN_SUBFORUM_CATS = [
     name: 'Electrical systems',
     icon: '⚡',
     desc: 'DME, coding, lighting, sensors, CAN bus',
-  },
-  {
-    id: 'builds',
-    name: 'Build showcase',
-    icon: '🚗',
-    desc: 'Share your project thread',
   },
   {
     id: 'general',
@@ -40,6 +40,48 @@ export const GEN_SUBFORUM_CATS = [
 ] as const
 
 export type GenCategory = typeof GEN_SUBFORUM_CATS[number]['id']
+
+// ── Engine subforums (nested under the Engine category, per generation) ──
+export interface EngineSubforum {
+  id: string
+  code: string
+  models: string
+}
+
+export const GENERATION_ENGINES: Record<Generation, EngineSubforum[]> = {
+  E34: [
+    { id: 'm20', code: 'M20', models: '525i/525e (early)' },
+    { id: 'm30', code: 'M30', models: '525i/528i/535i/M5' },
+    { id: 's38', code: 'S38', models: 'M5 (later)' },
+    { id: 'm50-m51', code: 'M50/M51', models: '525td/525tds (diesel)' },
+  ],
+  E39: [
+    { id: 'm52-m54', code: 'M52/M54', models: '520i/523i/525i/528i/530i' },
+    { id: 'm62', code: 'M62', models: '540i' },
+    { id: 's62', code: 'S62', models: 'M5' },
+    { id: 'm47-m57', code: 'M47/M57', models: '520d/525d/530d (diesel)' },
+  ],
+  E60: [
+    { id: 'n52-n53', code: 'N52/N53', models: '523i/525i/528i/530i' },
+    { id: 'n54', code: 'N54', models: '535i' },
+    { id: 'n62', code: 'N62', models: '545i/550i' },
+    { id: 's85', code: 'S85', models: 'M5' },
+    { id: 'm57', code: 'M57', models: '530d/535d (diesel)' },
+  ],
+  F10: [
+    { id: 'n20', code: 'N20', models: '528i' },
+    { id: 'n55', code: 'N55', models: '535i' },
+    { id: 'n63', code: 'N63', models: '550i' },
+    { id: 's63', code: 'S63', models: 'M5' },
+    { id: 'n57', code: 'N57', models: '530d/535d (diesel)' },
+  ],
+  G30: [
+    { id: 'b46-b48', code: 'B46/B48', models: '530i/530e' },
+    { id: 'b58', code: 'B58', models: '540i' },
+    { id: 's63', code: 'S63', models: 'M550i/M5' },
+    { id: 'b47-b57', code: 'B47/B57', models: '520d/530d/540d (diesel)' },
+  ],
+}
 
 export const REGIONAL_SUBFORUMS = [
   { id: 'northeast-us',   name: 'Northeast US',    flag: '🇺🇸', desc: 'ME, NH, VT, MA, RI, CT, NY, NJ, PA, DE, MD' },

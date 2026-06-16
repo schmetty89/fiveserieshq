@@ -6,8 +6,8 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { Loader2, AlertCircle, ChevronRight } from 'lucide-react'
 import { createThread, createPost } from '@/lib/forum-data'
 import { useAuth } from '@/components/auth/AuthProvider'
-import { GENERATIONS } from '@/types'
-import { GEN_SUBFORUM_CATS, REGIONAL_SUBFORUMS } from '@/lib/forum-config'
+import { GENERATIONS, Generation } from '@/types'
+import { GEN_SUBFORUM_CATS, REGIONAL_SUBFORUMS, GENERATION_ENGINES } from '@/lib/forum-config'
 import { Suspense } from 'react'
 
 function NewThreadFormInner() {
@@ -17,6 +17,7 @@ function NewThreadFormInner() {
 
   const defaultGen = searchParams.get('gen') || ''
   const defaultCat = searchParams.get('cat') || 'general'
+  const defaultEngine = searchParams.get('engine') || ''
   const defaultRegion = searchParams.get('region') || ''
 
   const [form, setForm] = useState({
@@ -24,14 +25,22 @@ function NewThreadFormInner() {
     body: '',
     generation: defaultGen,
     category: defaultCat,
+    engine: defaultEngine,
     region: defaultRegion,
     isRegional: !!defaultRegion,
   })
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
 
+  const engineOptions = form.generation ? GENERATION_ENGINES[form.generation as Generation] : []
+
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
-    setForm(f => ({ ...f, [e.target.name]: e.target.value }))
+    const { name, value } = e.target
+    setForm(f => ({
+      ...f,
+      [name]: value,
+      ...(name === 'generation' || name === 'category' ? { engine: '' } : {}),
+    }))
     setError('')
   }
 
@@ -44,6 +53,7 @@ function NewThreadFormInner() {
     if (form.title.length < 10) return setError('Title must be at least 10 characters.')
     if (!form.body.trim()) return setError('Please write something in the body.')
     if (!form.isRegional && !form.generation) return setError('Please select a generation.')
+    if (!form.isRegional && form.category === 'engine' && !form.engine) return setError('Please select an engine.')
 
     setSubmitting(true)
 
@@ -53,6 +63,7 @@ function NewThreadFormInner() {
         body: form.body.trim(),
         generation: form.isRegional ? undefined : form.generation,
         category: form.isRegional ? 'general' : form.category,
+        engine: !form.isRegional && form.category === 'engine' ? form.engine : undefined,
         regionalSubforum: form.isRegional ? form.region : undefined,
         authorId: user.id,
       })
@@ -154,6 +165,22 @@ function NewThreadFormInner() {
                 ))}
               </select>
             </div>
+            {form.category === 'engine' && (
+              <div className="col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Engine</label>
+                <select
+                  name="engine"
+                  value={form.engine}
+                  onChange={handleChange}
+                  className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-gray-900"
+                >
+                  <option value="">Select engine</option>
+                  {engineOptions.map(eng => (
+                    <option key={eng.id} value={eng.id}>{eng.code} — {eng.models}</option>
+                  ))}
+                </select>
+              </div>
+            )}
           </div>
         ) : (
           <div>

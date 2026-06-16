@@ -4,7 +4,7 @@ import { SubforumView } from '@/components/forums/SubforumView'
 import type { Metadata } from 'next'
 
 interface Props {
-  searchParams: Promise<{ gen?: string; cat?: string; region?: string }>
+  searchParams: Promise<{ gen?: string; cat?: string; engine?: string; region?: string }>
 }
 
 export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
@@ -12,7 +12,7 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
   const title = params.region
     ? `Regional Forums`
     : params.gen && params.cat
-    ? `${params.gen} — ${params.cat}`
+    ? `${params.gen} — ${params.cat}${params.engine ? ` — ${params.engine}` : ''}`
     : 'Forums'
   return { title }
 }
@@ -26,6 +26,7 @@ export default async function SubforumPage({ searchParams }: Props) {
         <SubforumView
           gen={params.gen}
           cat={params.cat}
+          engine={params.engine}
           region={params.region}
         />
       </main>
