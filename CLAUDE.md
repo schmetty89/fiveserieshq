@@ -291,6 +291,9 @@ Full lineups defined in `GENERATION_ENGINES` in `forum-config.ts`.
 ### Regional subforums
 Northeast US, Southeast US, Midwest US, Southwest US, West Coast US, Eastern Canada, Western Canada
 
+### M5 chassis code note
+The G30 generation's M5 uses chassis code **F90**, not G30 (BMW reused the prior letter for the M5 variant). The upcoming G60 generation's M5 will use **G90**. This is why the G30 hero background image is stored in Supabase as `F90 LIVE BACKGROUND.png` rather than `G30 LIVE BACKGROUND.png` — keep this in mind when adding or referencing per-generation M5 assets.
+
 ---
 
 ## Pending Work

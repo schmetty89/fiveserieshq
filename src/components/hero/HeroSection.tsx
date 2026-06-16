@@ -1,11 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Generation, GENERATIONS, GENERATION_YEARS, GENERATION_TAGLINE } from '@/types'
 import { GEN_COLORS } from '@/lib/utils'
-import { ChevronRight } from 'lucide-react'
 
 // Per-generation models offered
 const GENERATION_MODELS: Record<Generation, string[]> = {
@@ -28,11 +27,34 @@ const CAR_IMAGES: Record<Generation, string> = {
 // Nürburgring background
 const BG_IMAGE = 'https://xgfvrlrbeymronphmpii.supabase.co/storage/v1/object/public/hero-images/HOMEPAGE%20BACKGROUND.png?v=2'
 
+// Per-generation live backgrounds — crossfade in on hover
+const GEN_BG_IMAGES: Record<Generation, string> = {
+  E34: 'https://xgfvrlrbeymronphmpii.supabase.co/storage/v1/object/public/hero-images/E34%20LIVE%20BACKGROUND.png',
+  E39: 'https://xgfvrlrbeymronphmpii.supabase.co/storage/v1/object/public/hero-images/E39%20LIVE%20BACKGROUND.png',
+  E60: 'https://xgfvrlrbeymronphmpii.supabase.co/storage/v1/object/public/hero-images/E60%20LIVE%20BACKGROUND.png',
+  F10: 'https://xgfvrlrbeymronphmpii.supabase.co/storage/v1/object/public/hero-images/F10%20LIVE%20BACKGROUND.png',
+  G30: 'https://xgfvrlrbeymronphmpii.supabase.co/storage/v1/object/public/hero-images/F90%20LIVE%20BACKGROUND.png',
+}
+
+// License-plate hotspots overlaid on the live background, positioned in %
+// so they scale with the image regardless of viewport size
+const PLATE_HOTSPOTS = [
+  { label: 'Forums',  href: '/forums',    left: 7,  top: 53, width: 13, height: 8 },
+  { label: 'Builds',  href: '/builds',    left: 37, top: 53, width: 13, height: 8 },
+  { label: 'Tech',    href: '/technical', left: 68, top: 51, width: 13, height: 8 },
+]
+
 export function HeroSection() {
   const [hovered, setHovered] = useState<Generation | null>(null)
   const [selected, setSelected] = useState<Generation | null>(null)
+  const lastHoveredGenRef = useRef<Generation | null>(null)
 
   const active = hovered ?? selected
+
+  function handleCarHover(gen: Generation | null) {
+    if (gen) lastHoveredGenRef.current = gen
+    setHovered(gen)
+  }
 
   function handleCarClick(gen: Generation) {
     setSelected(s => s === gen ? null : gen)
@@ -49,7 +71,40 @@ export function HeroSection() {
           className="object-cover object-center opacity-75"
           priority
         />
+
+        {/* Generation-specific live backgrounds — crossfade in on hover */}
+        {GENERATIONS.map(gen => (
+          <Image
+            key={gen}
+            src={GEN_BG_IMAGES[gen]}
+            alt={`BMW ${gen} live background`}
+            fill
+            className="object-cover object-center transition-opacity duration-500 ease-in-out"
+            style={{ opacity: hovered === gen ? 1 : 0 }}
+          />
+        ))}
+
         <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a]/40 via-[#0a0a0a]/10 to-[#0a0a0a]/60" />
+      </div>
+
+      {/* License-plate hotspots — invisible until individually hovered */}
+      <div className="absolute inset-0 z-20 pointer-events-none">
+        {PLATE_HOTSPOTS.map(spot => (
+          <Link
+            key={spot.label}
+            href={spot.href}
+            aria-label={spot.label}
+            onMouseEnter={() => setHovered(lastHoveredGenRef.current)}
+            onMouseLeave={() => setHovered(null)}
+            className="absolute pointer-events-auto rounded-md border-2 border-transparent transition-all duration-300 hover:border-amber-200/90 hover:shadow-[0_0_20px_6px_rgba(255,215,140,0.55)] hover:backdrop-brightness-125"
+            style={{
+              left: `${spot.left}%`,
+              top: `${spot.top}%`,
+              width: `${spot.width}%`,
+              height: `${spot.height}%`,
+            }}
+          />
+        ))}
       </div>
 
       <div className="relative z-10 flex flex-col" style={{ minHeight: '680px' }}>
@@ -103,8 +158,8 @@ export function HeroSection() {
             return (
               <button
                 key={gen}
-                onMouseEnter={() => setHovered(gen)}
-                onMouseLeave={() => setHovered(null)}
+                onMouseEnter={() => handleCarHover(gen)}
+                onMouseLeave={() => handleCarHover(null)}
                 onClick={() => handleCarClick(gen)}
                 aria-label={`Explore BMW ${gen} — ${GENERATION_YEARS[gen]}`}
                 className="flex-1 max-w-[195px] flex flex-col items-center justify-end cursor-pointer group relative"
@@ -167,44 +222,6 @@ export function HeroSection() {
             )
           })}
         </div>
-
-        {/* Selected gen panel */}
-        {selected && (
-          <div className="relative z-10 bg-[#0f0f0f]/95 backdrop-blur-sm border-t border-white/10 px-6 py-2">
-            <div className="max-w-screen-lg mx-auto flex flex-col sm:flex-row gap-4 items-start sm:items-center">
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-1 flex-wrap">
-                  <span
-                    className="text-xs font-bold px-2.5 py-0.5 rounded-full"
-                    style={{ background: GEN_COLORS[selected].bg, color: GEN_COLORS[selected].text }}
-                  >
-                    {selected}
-                  </span>
-                  <span className="text-white font-semibold text-sm">
-                    {GENERATION_TAGLINE[selected]}
-                  </span>
-                </div>
-                <p className="text-white/40 text-xs">{GENERATION_YEARS[selected]}</p>
-              </div>
-              <div className="grid grid-cols-3 gap-3">
-                {[
-                  { label: 'Forum',       href: `/forums?gen=${selected}` },
-                  { label: 'Builds',      href: `/builds?gen=${selected}` },
-                  { label: 'Tech guides', href: `/technical?gen=${selected}` },
-                ].map(({ label, href }) => (
-                  <Link
-                    key={label}
-                    href={href}
-                    className="flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 transition-colors group"
-                  >
-                    <span className="text-xs font-medium text-white/80 group-hover:text-white">{label}</span>
-                    <ChevronRight size={12} className="text-white/40 group-hover:text-white/70" />
-                  </Link>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </section>
   )
