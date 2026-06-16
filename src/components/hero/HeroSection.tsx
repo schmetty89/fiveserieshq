@@ -38,11 +38,24 @@ const GEN_BG_IMAGES: Record<Generation, string> = {
 
 // License-plate hotspots overlaid on the live background, positioned in %
 // so they scale with the image regardless of viewport size
-const PLATE_HOTSPOTS = [
-  { label: 'Forums',  href: '/forums',    left: 7,  top: 53, width: 13, height: 8 },
-  { label: 'Builds',  href: '/builds',    left: 37, top: 53, width: 13, height: 8 },
-  { label: 'Tech',    href: '/technical', left: 68, top: 51, width: 13, height: 8 },
+const DEFAULT_PLATE_HOTSPOTS = [
+  { label: 'Forums',  href: '/forums',    left: 7,  top: 53,   width: 13,  height: 8 },
+  { label: 'Builds',  href: '/builds',    left: 37, top: 53,   width: 13,  height: 8 },
+  { label: 'Tech',    href: '/technical', left: 68, top: 51,   width: 13,  height: 8 },
 ]
+
+// Per-generation overrides where the live background's plate placement differs
+const GENERATION_PLATE_HOTSPOTS: Record<Generation, typeof DEFAULT_PLATE_HOTSPOTS> = {
+  E34: [
+    { label: 'Forums',  href: '/forums',    left: 9,  top: 54,   width: 6.5, height: 8 },
+    { label: 'Builds',  href: '/builds',    left: 35, top: 61,   width: 6.5, height: 8 },
+    { label: 'Tech',    href: '/technical', left: 68, top: 76.5, width: 13,  height: 8 },
+  ],
+  E39: DEFAULT_PLATE_HOTSPOTS,
+  E60: DEFAULT_PLATE_HOTSPOTS,
+  F10: DEFAULT_PLATE_HOTSPOTS,
+  G30: DEFAULT_PLATE_HOTSPOTS,
+}
 
 export function HeroSection() {
   const [hovered, setHovered] = useState<Generation | null>(null)
@@ -103,7 +116,7 @@ export function HeroSection() {
 
       {/* License-plate hotspots — invisible until individually hovered */}
       <div className="absolute inset-0 z-20 pointer-events-none">
-        {PLATE_HOTSPOTS.map(spot => (
+        {(active ? GENERATION_PLATE_HOTSPOTS[active] : DEFAULT_PLATE_HOTSPOTS).map(spot => (
           <Link
             key={spot.label}
             href={spot.href}
