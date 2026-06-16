@@ -278,7 +278,8 @@ export function SubforumView({ gen, cat, engine, transmission, region }: Props) 
                 That said, this community is in its infancy. The technical library grows as the community contributes to it, and as future generations of the 5 Series are added to the site, their technical sections will start the same way — empty, but not for long. If you can&apos;t find what you&apos;re looking for in the tech section, post here — someone in the community will have the answer.
               </p>
               <p>
-                But here&apos;s where you can make a real difference: if you get the answer you need, take a few minutes to document it in the Technical Library. What took you an hour to track down might save the next member — and every member after them — from starting from scratch. That one-for-all mentality is what separates a great community from just another forum.
+                But here&apos;s where you can make a real difference: if you get the answer you need, take a few minutes to document it in the Technical Library. What took you an hour to track down might save the next member — and every member after them — from starting from scratch. That one-for-all mentality is what separates a great community from just another forum. If you have knowledge worth sharing — whether it&apos;s a fix you figured out, a spec you confirmed, or a procedure you&apos;ve done a dozen times — please consider submitting it to the{' '}
+                <Link href="/technical" className="font-medium underline hover:text-blue-900">Technical Library</Link>. The more members contribute, the faster this becomes the resource the 5 Series community has always needed.
               </p>
             </div>
           )}
