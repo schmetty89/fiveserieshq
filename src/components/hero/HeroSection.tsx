@@ -69,6 +69,7 @@ export function HeroSection() {
     function handleDocumentClick(e: MouseEvent) {
       if (heroRef.current && !heroRef.current.contains(e.target as Node)) {
         setSelected(null)
+        setHovered(null)
       }
     }
     document.addEventListener('click', handleDocumentClick)
@@ -105,36 +106,38 @@ export function HeroSection() {
         <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a]/40 via-[#0a0a0a]/10 to-[#0a0a0a]/60" />
       </div>
 
-      {/* License-plate hotspots — invisible until individually hovered */}
-      <div className="absolute inset-0 z-20 pointer-events-none">
-        {(active ? GENERATION_PLATE_HOTSPOTS[active] : DEFAULT_PLATE_HOTSPOTS).map(spot => (
-          <Link
-            key={spot.label}
-            href={spot.href}
-            aria-label={spot.label}
-            onMouseEnter={() => setHovered(lastHoveredGenRef.current)}
-            onMouseLeave={() => setHovered(null)}
-            className="absolute pointer-events-auto rounded-md border-2 border-transparent transition-all duration-300 hover:border-amber-200/90 hover:shadow-[0_0_20px_6px_rgba(255,215,140,0.55)] hover:backdrop-brightness-125"
-            style={{
-              left: `${spot.left}%`,
-              top: `${spot.top}%`,
-              width: `${spot.width}%`,
-              height: `${spot.height}%`,
-            }}
-          />
-        ))}
-      </div>
+      {/* License-plate hotspots — only mounted while a gen is active */}
+      {active && (
+        <div className="absolute inset-0 z-20 pointer-events-none">
+          {GENERATION_PLATE_HOTSPOTS[active].map(spot => (
+            <Link
+              key={spot.label}
+              href={spot.href}
+              aria-label={spot.label}
+              onMouseEnter={() => setHovered(lastHoveredGenRef.current)}
+              onMouseLeave={() => setHovered(null)}
+              className="absolute pointer-events-auto rounded-md border-2 border-transparent transition-all duration-300 hover:border-amber-200/90 hover:shadow-[0_0_20px_6px_rgba(255,215,140,0.55)] hover:backdrop-brightness-125"
+              style={{
+                left: `${spot.left}%`,
+                top: `${spot.top}%`,
+                width: `${spot.width}%`,
+                height: `${spot.height}%`,
+              }}
+            />
+          ))}
+        </div>
+      )}
 
       <div className="relative z-10 flex flex-col" style={{ minHeight: '680px' }}>
 
         {/* Hero copy */}
         <div className="flex-1 flex flex-col items-center justify-center pt-14 pb-4 px-6 text-center">
           <div className="transition-all duration-300" style={{ opacity: active ? 0 : 1, pointerEvents: active ? 'none' : 'auto' }}>
-            <h1 className="text-3xl sm:text-4xl font-black text-white uppercase tracking-[3px] leading-tight mb-3">
-              Every generation.<br />One legend.
+            <h1 className="text-3xl sm:text-4xl font-bold text-white leading-tight mb-3">
+              Five Generations. One Community.
             </h1>
-            <p className="text-sm text-white/50 tracking-wide">
-              Hover a generation to explore · Click to enter
+            <p className="text-sm text-white/50">
+              The BMW 5 Series has had five generations, countless variants, and millions of passionate owners. It's never had a hub. Until now.
             </p>
           </div>
 
