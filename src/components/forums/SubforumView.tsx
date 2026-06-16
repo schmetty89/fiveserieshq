@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { ChevronRight, Edit, CheckCircle, Pin, Clock, MessageCircle } from 'lucide-react'
+import { ChevronRight, ChevronDown, Edit, CheckCircle, Pin, Clock, MessageCircle, Info } from 'lucide-react'
 import { formatRelativeTime } from '@/lib/utils'
 import { GEN_SUBFORUM_CATS, REGIONAL_SUBFORUMS, GEN_COLORS, GENERATION_ENGINES, GENERATION_TRANSMISSIONS } from '@/lib/forum-config'
 import { getThreads } from '@/lib/forum-data'
@@ -36,6 +36,7 @@ export function SubforumView({ gen, cat, engine, transmission, region }: Props) 
   const { user, isTier2 } = useAuth()
   const [threads, setThreads] = useState<ThreadRow[]>([])
   const [loading, setLoading] = useState(true)
+  const [showInfoBox, setShowInfoBox] = useState(true)
 
   const isRegional = !!region
   const showCategoryList = !!gen && !cat && !region
@@ -241,6 +242,46 @@ export function SubforumView({ gen, cat, engine, transmission, region }: Props) 
               {r.flag} {r.name}
             </Link>
           ))}
+        </div>
+      )}
+
+      {/* Discussion floor info callout */}
+      {!!gen && !!cat && !region && (
+        <div className="mb-5 rounded-xl border border-blue-100 bg-blue-50/60">
+          <button
+            type="button"
+            onClick={() => setShowInfoBox(s => !s)}
+            className="w-full flex items-center justify-between gap-2 px-4 py-3 text-left"
+          >
+            <span className="flex items-center gap-2 text-sm font-medium text-blue-900">
+              <Info size={15} className="text-blue-500 flex-shrink-0" />
+              This is the discussion floor.
+            </span>
+            <ChevronDown
+              size={14}
+              className={`text-blue-400 transition-transform flex-shrink-0 ${showInfoBox ? 'rotate-180' : ''}`}
+            />
+          </button>
+          {showInfoBox && (
+            <div className="px-4 pb-4 text-sm text-blue-800/90 leading-relaxed space-y-3">
+              <p>
+                The forums are for conversation — sharing experiences, debating setups, connecting with other owners, and the kind of back-and-forth that only a community can provide.
+              </p>
+              <p>
+                If you&apos;re looking for a verified answer to a technical question, check the{' '}
+                <Link href="/technical" className="font-medium underline hover:text-blue-900">Technical Library</Link>{' '}
+                first — built so that knowledge lives somewhere permanent, searchable, and trustworthy rather than buried in a thread. Likewise, if build inspiration is what you&apos;re after, the{' '}
+                <Link href="/builds" className="font-medium underline hover:text-blue-900">Build Showcase</Link>{' '}
+                exists for exactly that.
+              </p>
+              <p>
+                That said, this community is in its infancy. The technical library grows as the community contributes to it, and as BMW adds new generations of the 5 Series, those sections will start lean too. If you can&apos;t find what you&apos;re looking for in the tech section, post here — someone in the community will have the answer.
+              </p>
+              <p>
+                But here&apos;s where you can make a real difference: if you get the answer you need, take a few minutes to document it in the Technical Library. What took you an hour to track down might save the next member — and every member after them — from starting from scratch. That one-for-all mentality is what separates a great community from just another forum.
+              </p>
+            </div>
+          )}
         </div>
       )}
 
