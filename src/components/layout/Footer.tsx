@@ -12,13 +12,6 @@ const FOOTER_LINKS = {
     { label: 'Trusted vendors', href: '/vendors' },
     { label: 'Build books', href: '/builds/library' },
   ],
-  Generations: [
-    { label: 'E34 (1988–1996)', href: '/forums?gen=E34' },
-    { label: 'E39 (1995–2003)', href: '/forums?gen=E39' },
-    { label: 'E60 (2003–2010)', href: '/forums?gen=E60' },
-    { label: 'F10 (2010–2017)', href: '/forums?gen=F10' },
-    { label: 'G30 (2017–)', href: '/forums?gen=G30' },
-  ],
   Site: [
     { label: 'About', href: '/about' },
     { label: 'Join', href: '/auth/join' },
