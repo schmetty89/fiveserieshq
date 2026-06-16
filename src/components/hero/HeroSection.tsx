@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Generation, GENERATIONS, GENERATION_YEARS, GENERATION_TAGLINE } from '@/types'
@@ -48,6 +48,7 @@ export function HeroSection() {
   const [hovered, setHovered] = useState<Generation | null>(null)
   const [selected, setSelected] = useState<Generation | null>(null)
   const lastHoveredGenRef = useRef<Generation | null>(null)
+  const heroRef = useRef<HTMLElement>(null)
 
   const active = hovered ?? selected
 
@@ -57,18 +58,23 @@ export function HeroSection() {
   }
 
   function handleCarClick(gen: Generation) {
-    setSelected(s => s === gen ? null : gen)
+    setSelected(gen)
   }
 
-  function handleHeroLeave() {
-    setHovered(null)
-    setSelected(null)
-  }
+  useEffect(() => {
+    function handleDocumentClick(e: MouseEvent) {
+      if (heroRef.current && !heroRef.current.contains(e.target as Node)) {
+        setSelected(null)
+      }
+    }
+    document.addEventListener('click', handleDocumentClick)
+    return () => document.removeEventListener('click', handleDocumentClick)
+  }, [])
 
   return (
     <section
+      ref={heroRef}
       className="relative bg-[#0a0a0a] overflow-hidden"
-      onMouseLeave={handleHeroLeave}
     >
       {/* Nürburgring background */}
       <div className="absolute inset-0">
