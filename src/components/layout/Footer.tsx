@@ -4,7 +4,6 @@ const FOOTER_LINKS = {
   Community: [
     { label: 'Forums', href: '/forums' },
     { label: 'Build showcase', href: '/builds' },
-    { label: 'Member garage', href: '/members' },
     { label: 'Events', href: '/events' },
   ],
   Resources: [
