@@ -137,7 +137,7 @@ export function HeroSection() {
               Five Generations. One Community.
             </h1>
             <p className="text-sm text-white/50">
-              The BMW 5 Series has had five generations, countless variants, and millions of passionate owners. It's never had a hub. Until now.
+              The BMW 5 Series has had five generations, countless variants, and millions of passionate owners. It&apos;s never had a hub. Until now.
             </p>
           </div>
 
