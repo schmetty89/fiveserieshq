@@ -47,7 +47,7 @@ const DEFAULT_PLATE_HOTSPOTS = [
 // Per-generation overrides where the live background's plate placement differs
 const GENERATION_PLATE_HOTSPOTS: Record<Generation, typeof DEFAULT_PLATE_HOTSPOTS> = {
   E34: [
-    { label: 'Forums',  href: '/forums',    left: 9,  top: 54,   width: 6.5, height: 8 },
+    { label: 'Forums',  href: '/forums',    left: 8,  top: 54,   width: 4.875, height: 5.36 },
     { label: 'Builds',  href: '/builds',    left: 35, top: 61,   width: 6.5, height: 8 },
     { label: 'Tech',    href: '/technical', left: 68, top: 76.5, width: 13,  height: 8 },
   ],
