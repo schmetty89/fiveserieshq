@@ -10,7 +10,6 @@ const FOOTER_LINKS = {
     { label: 'Video library', href: '/videos' },
     { label: 'Technical info', href: '/technical' },
     { label: 'Trusted vendors', href: '/vendors' },
-    { label: 'Build books', href: '/builds/library' },
   ],
   Site: [
     { label: 'About', href: '/about' },
@@ -23,7 +22,7 @@ export function Footer() {
   return (
     <footer className="bg-[#0f0f0f] text-white/50 mt-16">
       <div className="max-w-screen-2xl mx-auto px-6 py-12">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-10">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 mb-10 max-w-2xl mx-auto text-center sm:text-left">
           {Object.entries(FOOTER_LINKS).map(([section, links]) => (
             <div key={section}>
               <h3 className="text-xs font-medium text-white/30 uppercase tracking-widest mb-4">
