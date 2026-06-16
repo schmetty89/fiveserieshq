@@ -124,13 +124,6 @@ export function Navbar() {
                     >
                       <User size={14} /> My profile
                     </Link>
-                    <Link
-                      href="/members/me/garage"
-                      onClick={() => setDropdownOpen(false)}
-                      className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                    >
-                      <span className="text-sm">🚗</span> My garage
-                    </Link>
                     <div className="border-t border-gray-100 mt-1 pt-1">
                       <button
                         onClick={handleSignOut}
