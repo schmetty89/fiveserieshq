@@ -130,18 +130,8 @@ export function HeroSection() {
 
       <div className="relative z-10 flex flex-col" style={{ minHeight: '680px' }}>
 
-        {/* Hero copy */}
+        {/* Active gen overlay */}
         <div className="flex-1 flex flex-col items-center justify-center pt-14 pb-4 px-6 text-center">
-          <div className="transition-all duration-300" style={{ opacity: active ? 0 : 1, pointerEvents: active ? 'none' : 'auto' }}>
-            <h1 className="text-3xl sm:text-4xl font-bold text-white leading-tight mb-3">
-              Five Generations. One Community.
-            </h1>
-            <p className="text-sm text-white/50">
-              The BMW 5 Series has had five generations, countless variants, and millions of passionate owners. It&apos;s never had a hub. Until now.
-            </p>
-          </div>
-
-          {/* Active gen overlay */}
           {active && (
             <div className="absolute top-14 left-0 right-0 text-center pointer-events-none px-4">
               <div className="text-5xl font-black text-white/10 tracking-[8px] uppercase leading-none">
@@ -170,6 +160,25 @@ export function HeroSection() {
               </div>
             </div>
           )}
+        </div>
+
+        {/* Hero copy — bottom, above the selector strip */}
+        <div
+          className="transition-all duration-300 text-center px-6 pb-6"
+          style={{ opacity: active ? 0 : 1, pointerEvents: active ? 'none' : 'auto' }}
+        >
+          <h1
+            className="text-[2.344rem] sm:text-[2.813rem] font-bold text-white leading-tight mb-3"
+            style={{ fontVariantCaps: 'small-caps' }}
+          >
+            Five Generations. One Community.
+          </h1>
+          <p
+            className="text-[1.313rem] text-white/50"
+            style={{ fontVariantCaps: 'small-caps' }}
+          >
+            The BMW 5 Series has had five generations, countless variants, and millions of passionate owners. It&apos;s never had a hub. Until now.
+          </p>
         </div>
 
         {/* Generation selector strip */}
