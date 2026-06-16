@@ -275,7 +275,7 @@ export function SubforumView({ gen, cat, engine, transmission, region }: Props) 
                 exists for exactly that.
               </p>
               <p>
-                That said, this community is in its infancy. The technical library grows as the community contributes to it, and as BMW adds new generations of the 5 Series, those sections will start lean too. If you can&apos;t find what you&apos;re looking for in the tech section, post here — someone in the community will have the answer.
+                That said, this community is in its infancy. The technical library grows as the community contributes to it, and as future generations of the 5 Series are added to the site, their technical sections will start the same way — empty, but not for long. If you can&apos;t find what you&apos;re looking for in the tech section, post here — someone in the community will have the answer.
               </p>
               <p>
                 But here&apos;s where you can make a real difference: if you get the answer you need, take a few minutes to document it in the Technical Library. What took you an hour to track down might save the next member — and every member after them — from starting from scratch. That one-for-all mentality is what separates a great community from just another forum.
