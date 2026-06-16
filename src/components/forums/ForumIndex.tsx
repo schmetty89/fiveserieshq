@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { Edit, ChevronRight, ChevronDown, MapPin } from 'lucide-react'
 import { GENERATIONS, Generation } from '@/types'
 import { GENERATION_YEARS } from '@/types'
-import { GEN_SUBFORUM_CATS, REGIONAL_SUBFORUMS, GEN_COLORS, GENERATION_ENGINES } from '@/lib/forum-config'
+import { GEN_SUBFORUM_CATS, REGIONAL_SUBFORUMS, GEN_COLORS, GENERATION_ENGINES, GENERATION_TRANSMISSIONS } from '@/lib/forum-config'
 import { useAuth } from '@/components/auth/AuthProvider'
 
 const GEN_THREAD_COUNTS: Record<Generation, number> = {
@@ -18,6 +18,17 @@ export function ForumIndex() {
   const { user } = useAuth()
   const [activeFilter, setActiveFilter] = useState<Generation | 'all' | 'regional'>('all')
   const [expandedEngineGen, setExpandedEngineGen] = useState<Generation | null>(null)
+  const [expandedDrivetrainGen, setExpandedDrivetrainGen] = useState<Generation | null>(null)
+  const [openTransmissionGroups, setOpenTransmissionGroups] = useState<Set<string>>(new Set())
+
+  function toggleTransmissionGroup(key: string) {
+    setOpenTransmissionGroups(prev => {
+      const next = new Set(prev)
+      if (next.has(key)) next.delete(key)
+      else next.add(key)
+      return next
+    })
+  }
 
   const showGen = activeFilter === 'all' || GENERATIONS.includes(activeFilter as Generation)
   const showRegional = activeFilter === 'all' || activeFilter === 'regional'
@@ -131,6 +142,75 @@ export function ForumIndex() {
                                 <span className="text-xs text-gray-400">{eng.models}</span>
                               </Link>
                             ))}
+                          </div>
+                        )}
+                      </div>
+                    )
+                  }
+                  if (cat.id === 'drivetrain') {
+                    const isExpanded = expandedDrivetrainGen === gen
+                    const transmissions = GENERATION_TRANSMISSIONS[gen]
+                    const groups: { type: 'manual' | 'automatic'; label: string }[] = [
+                      { type: 'manual', label: 'Manual' },
+                      { type: 'automatic', label: 'Automatic' },
+                    ]
+                    return (
+                      <div key={cat.id} className="border-b border-gray-100">
+                        <button
+                          type="button"
+                          onClick={() => setExpandedDrivetrainGen(isExpanded ? null : gen)}
+                          className="w-full flex items-center gap-3 px-4 py-3 pl-8 hover:bg-gray-50 transition-colors group text-left"
+                        >
+                          <div className="w-7 h-7 rounded-md flex items-center justify-center text-base flex-shrink-0" style={{ background: bg }}>
+                            <span>{cat.icon}</span>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="text-sm font-medium text-gray-700 group-hover:text-gray-900">{cat.name}</div>
+                            <div className="text-xs text-gray-400">{cat.desc}</div>
+                          </div>
+                          <ChevronDown
+                            size={14}
+                            className={`text-gray-300 group-hover:text-gray-400 flex-shrink-0 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                          />
+                        </button>
+                        {isExpanded && (
+                          <div className="bg-gray-50/50">
+                            <Link
+                              href={`/forums/subforum?gen=${gen}&cat=drivetrain`}
+                              className="flex items-center gap-3 px-4 py-2.5 pl-16 hover:bg-gray-50 transition-colors group"
+                            >
+                              <span className="text-sm text-gray-600 group-hover:text-gray-900">All drivetrain discussion</span>
+                            </Link>
+                            {groups.map(({ type, label }) => {
+                              const groupKey = `${gen}-${type}`
+                              const isGroupOpen = openTransmissionGroups.has(groupKey)
+                              const items = transmissions.filter(t => t.type === type)
+                              return (
+                                <div key={type}>
+                                  <button
+                                    type="button"
+                                    onClick={() => toggleTransmissionGroup(groupKey)}
+                                    className="w-full flex items-center gap-3 px-4 py-2 pl-16 hover:bg-gray-50 transition-colors group text-left"
+                                  >
+                                    <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide flex-1">{label}</span>
+                                    <ChevronDown
+                                      size={12}
+                                      className={`text-gray-300 group-hover:text-gray-400 flex-shrink-0 transition-transform ${isGroupOpen ? 'rotate-180' : ''}`}
+                                    />
+                                  </button>
+                                  {isGroupOpen && items.map(t => (
+                                    <Link
+                                      key={t.id}
+                                      href={`/forums/subforum?gen=${gen}&cat=drivetrain&transmission=${t.id}`}
+                                      className="flex items-center gap-3 px-4 py-2 pl-24 hover:bg-gray-50 transition-colors group"
+                                    >
+                                      <span className="text-sm text-gray-600 group-hover:text-gray-900">{t.code}</span>
+                                      <span className="text-xs text-gray-400">{t.models}</span>
+                                    </Link>
+                                  ))}
+                                </div>
+                              )
+                            })}
                           </div>
                         )}
                       </div>

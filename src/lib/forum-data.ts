@@ -4,6 +4,7 @@ export async function getThreads({
   generation,
   category,
   engine,
+  transmission,
   regionalSubforum,
   limit = 25,
   offset = 0,
@@ -11,6 +12,7 @@ export async function getThreads({
   generation?: string
   category?: string
   engine?: string
+  transmission?: string
   regionalSubforum?: string
   limit?: number
   offset?: number
@@ -19,7 +21,7 @@ export async function getThreads({
   let query = supabase
     .from('forum_threads')
     .select(`
-      id, title, generation, category, engine, regional_subforum,
+      id, title, generation, category, engine, transmission, regional_subforum,
       is_pinned, is_solved, reply_count, view_count,
       last_reply_at, created_at,
       profiles:author_id ( username, avatar_url )
@@ -31,6 +33,7 @@ export async function getThreads({
   if (generation) query = query.eq('generation', generation)
   if (category) query = query.eq('category', category)
   if (engine) query = query.eq('engine', engine)
+  if (transmission) query = query.eq('transmission', transmission)
   if (regionalSubforum) query = query.eq('regional_subforum', regionalSubforum)
 
   const { data, error } = await query
@@ -43,7 +46,7 @@ export async function getThread(id: string) {
   const { data, error } = await supabase
     .from('forum_threads')
     .select(`
-      id, title, body, generation, category, engine, regional_subforum,
+      id, title, body, generation, category, engine, transmission, regional_subforum,
       is_pinned, is_solved, reply_count, view_count,
       last_reply_at, created_at,
       profiles:author_id ( username, avatar_url )
@@ -76,6 +79,7 @@ export async function createThread({
   generation,
   category,
   engine,
+  transmission,
   regionalSubforum,
   authorId,
 }: {
@@ -84,6 +88,7 @@ export async function createThread({
   generation?: string
   category: string
   engine?: string
+  transmission?: string
   regionalSubforum?: string
   authorId: string
 }) {
@@ -96,6 +101,7 @@ export async function createThread({
       generation: generation || null,
       category,
       engine: engine || null,
+      transmission: transmission || null,
       regional_subforum: regionalSubforum || null,
       author_id: authorId,
     })

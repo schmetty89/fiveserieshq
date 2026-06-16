@@ -33,6 +33,7 @@ interface Thread {
   generation?: string
   category?: string
   engine?: string
+  transmission?: string
   regional_subforum?: string
   is_pinned: boolean
   is_solved: boolean
@@ -134,7 +135,7 @@ export function ThreadView({ threadId }: Props) {
         {thread.generation && (
           <>
             <Link
-              href={`/forums/subforum?gen=${thread.generation}&cat=${thread.category}${thread.engine ? `&engine=${thread.engine}` : ''}`}
+              href={`/forums/subforum?gen=${thread.generation}&cat=${thread.category}${thread.engine ? `&engine=${thread.engine}` : ''}${thread.transmission ? `&transmission=${thread.transmission}` : ''}`}
               className="hover:text-gray-600"
             >
               {thread.generation}

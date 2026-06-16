@@ -7,7 +7,7 @@ import { Loader2, AlertCircle, ChevronRight } from 'lucide-react'
 import { createThread, createPost } from '@/lib/forum-data'
 import { useAuth } from '@/components/auth/AuthProvider'
 import { GENERATIONS, Generation } from '@/types'
-import { GEN_SUBFORUM_CATS, REGIONAL_SUBFORUMS, GENERATION_ENGINES } from '@/lib/forum-config'
+import { GEN_SUBFORUM_CATS, REGIONAL_SUBFORUMS, GENERATION_ENGINES, GENERATION_TRANSMISSIONS } from '@/lib/forum-config'
 import { Suspense } from 'react'
 
 function NewThreadFormInner() {
@@ -18,6 +18,7 @@ function NewThreadFormInner() {
   const defaultGen = searchParams.get('gen') || ''
   const defaultCat = searchParams.get('cat') || 'general'
   const defaultEngine = searchParams.get('engine') || ''
+  const defaultTransmission = searchParams.get('transmission') || ''
   const defaultRegion = searchParams.get('region') || ''
 
   const [form, setForm] = useState({
@@ -26,6 +27,7 @@ function NewThreadFormInner() {
     generation: defaultGen,
     category: defaultCat,
     engine: defaultEngine,
+    transmission: defaultTransmission,
     region: defaultRegion,
     isRegional: !!defaultRegion,
   })
@@ -33,13 +35,16 @@ function NewThreadFormInner() {
   const [error, setError] = useState('')
 
   const engineOptions = form.generation ? GENERATION_ENGINES[form.generation as Generation] : []
+  const transmissionOptions = form.generation ? GENERATION_TRANSMISSIONS[form.generation as Generation] : []
+  const manualTransmissions = transmissionOptions.filter(t => t.type === 'manual')
+  const autoTransmissions = transmissionOptions.filter(t => t.type === 'automatic')
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
     const { name, value } = e.target
     setForm(f => ({
       ...f,
       [name]: value,
-      ...(name === 'generation' || name === 'category' ? { engine: '' } : {}),
+      ...(name === 'generation' || name === 'category' ? { engine: '', transmission: '' } : {}),
     }))
     setError('')
   }
@@ -54,6 +59,7 @@ function NewThreadFormInner() {
     if (!form.body.trim()) return setError('Please write something in the body.')
     if (!form.isRegional && !form.generation) return setError('Please select a generation.')
     if (!form.isRegional && form.category === 'engine' && !form.engine) return setError('Please select an engine.')
+    if (!form.isRegional && form.category === 'drivetrain' && !form.transmission) return setError('Please select a transmission.')
 
     setSubmitting(true)
 
@@ -64,6 +70,7 @@ function NewThreadFormInner() {
         generation: form.isRegional ? undefined : form.generation,
         category: form.isRegional ? 'general' : form.category,
         engine: !form.isRegional && form.category === 'engine' ? form.engine : undefined,
+        transmission: !form.isRegional && form.category === 'drivetrain' ? form.transmission : undefined,
         regionalSubforum: form.isRegional ? form.region : undefined,
         authorId: user.id,
       })
@@ -178,6 +185,33 @@ function NewThreadFormInner() {
                   {engineOptions.map(eng => (
                     <option key={eng.id} value={eng.id}>{eng.code} — {eng.models}</option>
                   ))}
+                </select>
+              </div>
+            )}
+            {form.category === 'drivetrain' && (
+              <div className="col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Transmission</label>
+                <select
+                  name="transmission"
+                  value={form.transmission}
+                  onChange={handleChange}
+                  className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-gray-900"
+                >
+                  <option value="">Select transmission</option>
+                  {manualTransmissions.length > 0 && (
+                    <optgroup label="Manual">
+                      {manualTransmissions.map(t => (
+                        <option key={t.id} value={t.id}>{t.code} — {t.models}</option>
+                      ))}
+                    </optgroup>
+                  )}
+                  {autoTransmissions.length > 0 && (
+                    <optgroup label="Automatic">
+                      {autoTransmissions.map(t => (
+                        <option key={t.id} value={t.id}>{t.code} — {t.models}</option>
+                      ))}
+                    </optgroup>
+                  )}
                 </select>
               </div>
             )}

@@ -83,6 +83,47 @@ export const GENERATION_ENGINES: Record<Generation, EngineSubforum[]> = {
   ],
 }
 
+// ── Transmission subforums (nested under Drivetrain, grouped by type) ──
+export interface TransmissionSubforum {
+  id: string
+  code: string
+  models: string
+  type: 'manual' | 'automatic'
+}
+
+export const GENERATION_TRANSMISSIONS: Record<Generation, TransmissionSubforum[]> = {
+  E34: [
+    { id: 'getrag-260-5', code: 'Getrag 260/5', models: '520i, 525i', type: 'manual' },
+    { id: 'getrag-280-5', code: 'Getrag 280/5', models: '530i, 535i', type: 'manual' },
+    { id: 'getrag-420g', code: 'Getrag 420G', models: '540i, M5', type: 'manual' },
+    { id: 'zf-4hp22', code: 'ZF 4HP22', models: '520i, 525i', type: 'automatic' },
+    { id: 'zf-4hp24', code: 'ZF 4HP24', models: '530i, 535i, 540i', type: 'automatic' },
+  ],
+  E39: [
+    { id: 'getrag-250-5', code: 'Getrag 250/5', models: '520i, 523i, 525i', type: 'manual' },
+    { id: 'getrag-420g', code: 'Getrag 420G', models: '528i, 530i', type: 'manual' },
+    { id: 'getrag-420g-6', code: 'Getrag 420G/6 6-speed', models: 'M5', type: 'manual' },
+    { id: 'zf-5hp18', code: 'ZF 5HP18', models: '520i, 523i, 525i', type: 'automatic' },
+    { id: 'zf-5hp24', code: 'ZF 5HP24', models: '528i, 530i, 540i', type: 'automatic' },
+  ],
+  E60: [
+    { id: 'getrag-gs6-37bz', code: 'Getrag GS6-37BZ', models: '525i, 530i', type: 'manual' },
+    { id: 'getrag-smg-6-speed-smg', code: 'Getrag SMG 6-speed SMG', models: 'M5', type: 'manual' },
+    { id: 'zf-6hp19', code: 'ZF 6HP19', models: '523i, 525i, 530i', type: 'automatic' },
+    { id: 'zf-6hp26', code: 'ZF 6HP26', models: '545i, 550i', type: 'automatic' },
+  ],
+  F10: [
+    { id: 'getrag-gs6-45bz', code: 'Getrag GS6-45BZ', models: '528i, 535i', type: 'manual' },
+    { id: 'm-dct-7-speed-dual-clutch', code: 'M-DCT 7-speed dual clutch', models: 'M5, M5 Competition', type: 'manual' },
+    { id: 'zf-8hp45', code: 'ZF 8HP45', models: '528i, 535i, 550i', type: 'automatic' },
+  ],
+  G30: [
+    { id: 'm-dct-8-speed-m-dct', code: 'M-DCT 8-speed M DCT', models: 'M5, M5 Competition, M5 CS', type: 'manual' },
+    { id: 'zf-8hp51', code: 'ZF 8HP51', models: '530i, 540i', type: 'automatic' },
+    { id: 'zf-8hp75', code: 'ZF 8HP75', models: 'M550i', type: 'automatic' },
+  ],
+}
+
 export const REGIONAL_SUBFORUMS = [
   { id: 'northeast-us',   name: 'Northeast US',    flag: '🇺🇸', desc: 'ME, NH, VT, MA, RI, CT, NY, NJ, PA, DE, MD' },
   { id: 'southeast-us',   name: 'Southeast US',    flag: '🇺🇸', desc: 'VA, WV, NC, SC, GA, FL, AL, MS, TN, KY' },

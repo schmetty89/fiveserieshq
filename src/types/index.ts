@@ -85,6 +85,7 @@ export interface ForumThread {
   generation?: Generation
   category: ForumCategory
   engine?: string
+  transmission?: string
   regional_subforum?: RegionalSubforum
   is_pinned: boolean
   is_solved: boolean

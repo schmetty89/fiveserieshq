@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { ChevronRight, Edit, CheckCircle, Pin, Clock, MessageCircle } from 'lucide-react'
 import { formatRelativeTime } from '@/lib/utils'
-import { GEN_SUBFORUM_CATS, REGIONAL_SUBFORUMS, GEN_COLORS, GENERATION_ENGINES } from '@/lib/forum-config'
+import { GEN_SUBFORUM_CATS, REGIONAL_SUBFORUMS, GEN_COLORS, GENERATION_ENGINES, GENERATION_TRANSMISSIONS } from '@/lib/forum-config'
 import { getThreads } from '@/lib/forum-data'
 import { useAuth } from '@/components/auth/AuthProvider'
 import { TierBadge } from '@/components/members/TierBadge'
@@ -16,6 +16,7 @@ interface ThreadRow {
   generation?: string
   category?: string
   engine?: string
+  transmission?: string
   is_pinned: boolean
   is_solved: boolean
   reply_count: number
@@ -27,10 +28,11 @@ interface Props {
   gen?: string
   cat?: string
   engine?: string
+  transmission?: string
   region?: string
 }
 
-export function SubforumView({ gen, cat, engine, region }: Props) {
+export function SubforumView({ gen, cat, engine, transmission, region }: Props) {
   const { user, isTier2 } = useAuth()
   const [threads, setThreads] = useState<ThreadRow[]>([])
   const [loading, setLoading] = useState(true)
@@ -46,6 +48,14 @@ export function SubforumView({ gen, cat, engine, region }: Props) {
   const engineOptions = isEngineSub ? GENERATION_ENGINES[gen as Generation] : []
   const engineInfo = engineOptions.find(e => e.id === engine)
 
+  const isDrivetrainSub = cat === 'drivetrain' && !!gen
+  const transmissionOptions = isDrivetrainSub ? GENERATION_TRANSMISSIONS[gen as Generation] : []
+  const transmissionInfo = transmissionOptions.find(t => t.id === transmission)
+  const manualTransmissions = transmissionOptions.filter(t => t.type === 'manual')
+  const autoTransmissions = transmissionOptions.filter(t => t.type === 'automatic')
+
+  const subInfo = engineInfo ?? transmissionInfo
+
   useEffect(() => {
     async function load() {
       setLoading(true)
@@ -54,6 +64,7 @@ export function SubforumView({ gen, cat, engine, region }: Props) {
           generation: gen,
           category: cat,
           engine,
+          transmission,
           regionalSubforum: region,
         })
         setThreads(data as ThreadRow[])
@@ -64,12 +75,12 @@ export function SubforumView({ gen, cat, engine, region }: Props) {
       }
     }
     load()
-  }, [gen, cat, engine, region])
+  }, [gen, cat, engine, transmission, region])
 
   const title = isRegional
     ? regionInfo?.name ?? 'Regional'
-    : engineInfo
-    ? `${catInfo?.name} — ${engineInfo.code}`
+    : subInfo
+    ? `${catInfo?.name} — ${subInfo.code}`
     : catInfo?.name ?? 'Forum'
 
   return (
@@ -89,7 +100,7 @@ export function SubforumView({ gen, cat, engine, region }: Props) {
                 <span className="text-gray-600">Tech & maintenance</span>
               </>
             )}
-            {engineInfo && (
+            {subInfo && (
               <>
                 <ChevronRight size={12} />
                 <span className="text-gray-600">{catInfo?.name}</span>
@@ -98,7 +109,7 @@ export function SubforumView({ gen, cat, engine, region }: Props) {
           </>
         )}
         <ChevronRight size={12} />
-        <span className="text-gray-900 font-medium">{engineInfo ? engineInfo.code : title}</span>
+        <span className="text-gray-900 font-medium">{subInfo ? subInfo.code : title}</span>
       </div>
 
       {/* Header */}
@@ -119,7 +130,7 @@ export function SubforumView({ gen, cat, engine, region }: Props) {
         </div>
         {user && isTier2 && (
           <Link
-            href={`/forums/new?gen=${gen ?? ''}&cat=${cat ?? ''}&engine=${engine ?? ''}&region=${region ?? ''}`}
+            href={`/forums/new?gen=${gen ?? ''}&cat=${cat ?? ''}&engine=${engine ?? ''}&transmission=${transmission ?? ''}&region=${region ?? ''}`}
             className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-gray-900 text-white text-sm font-medium hover:bg-gray-700 transition-colors"
           >
             <Edit size={13} /> New thread
@@ -161,6 +172,50 @@ export function SubforumView({ gen, cat, engine, region }: Props) {
         </div>
       )}
 
+      {/* Drivetrain sub-tabs */}
+      {isDrivetrainSub && (
+        <div className="mb-5 space-y-3">
+          <div className="flex gap-2 flex-wrap">
+            <Link href={`/forums/subforum?gen=${gen}&cat=drivetrain`}
+              className={`text-xs px-3 py-1.5 rounded-full border transition-all ${
+                !transmission ? 'bg-gray-900 text-white border-gray-900' : 'border-gray-200 text-gray-500 hover:border-gray-300'
+              }`}>
+              All
+            </Link>
+          </div>
+          {manualTransmissions.length > 0 && (
+            <div>
+              <div className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-1.5">Manual</div>
+              <div className="flex gap-2 flex-wrap">
+                {manualTransmissions.map(t => (
+                  <Link key={t.id} href={`/forums/subforum?gen=${gen}&cat=drivetrain&transmission=${t.id}`}
+                    className={`text-xs px-3 py-1.5 rounded-full border transition-all ${
+                      t.id === transmission ? 'bg-gray-900 text-white border-gray-900' : 'border-gray-200 text-gray-500 hover:border-gray-300'
+                    }`}>
+                    {t.code}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+          {autoTransmissions.length > 0 && (
+            <div>
+              <div className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-1.5">Automatic</div>
+              <div className="flex gap-2 flex-wrap">
+                {autoTransmissions.map(t => (
+                  <Link key={t.id} href={`/forums/subforum?gen=${gen}&cat=drivetrain&transmission=${t.id}`}
+                    className={`text-xs px-3 py-1.5 rounded-full border transition-all ${
+                      t.id === transmission ? 'bg-gray-900 text-white border-gray-900' : 'border-gray-200 text-gray-500 hover:border-gray-300'
+                    }`}>
+                    {t.code}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Regional sub-tabs */}
       {isRegional && (
         <div className="flex gap-2 flex-wrap mb-5">
@@ -188,7 +243,7 @@ export function SubforumView({ gen, cat, engine, region }: Props) {
           <p className="text-sm font-medium text-gray-500 mb-1">No threads yet</p>
           <p className="text-xs text-gray-400 mb-4">Be the first to start a discussion.</p>
           {user ? (
-            <Link href={`/forums/new?gen=${gen ?? ''}&cat=${cat ?? ''}&engine=${engine ?? ''}&region=${region ?? ''}`}
+            <Link href={`/forums/new?gen=${gen ?? ''}&cat=${cat ?? ''}&engine=${engine ?? ''}&transmission=${transmission ?? ''}&region=${region ?? ''}`}
               className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-900 text-white text-sm font-medium">
               <Edit size={13} /> Start a thread
             </Link>
