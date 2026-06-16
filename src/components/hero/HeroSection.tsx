@@ -60,8 +60,16 @@ export function HeroSection() {
     setSelected(s => s === gen ? null : gen)
   }
 
+  function handleHeroLeave() {
+    setHovered(null)
+    setSelected(null)
+  }
+
   return (
-    <section className="relative bg-[#0a0a0a] overflow-hidden">
+    <section
+      className="relative bg-[#0a0a0a] overflow-hidden"
+      onMouseLeave={handleHeroLeave}
+    >
       {/* Nürburgring background */}
       <div className="absolute inset-0">
         <Image
@@ -80,7 +88,7 @@ export function HeroSection() {
             alt={`BMW ${gen} live background`}
             fill
             className="object-cover object-center transition-opacity duration-500 ease-in-out"
-            style={{ opacity: hovered === gen ? 1 : 0 }}
+            style={{ opacity: active === gen ? 1 : 0 }}
           />
         ))}
 
