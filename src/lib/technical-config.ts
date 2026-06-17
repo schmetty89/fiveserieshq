@@ -23,6 +23,10 @@ export const DIAGNOSIS_SYSTEMS = [
   { id: 'mechanical-faults',name: 'Mechanical faults',  icon: '🔩', desc: 'Common failure points, diagnosis guides, known issues' },
 ] as const
 
+export const APPS_SYSTEMS = [
+  { id: 'fitment', name: 'Rim Fitment Guide', icon: '🔧', desc: 'Interactive wheel and tire fitment tool for all 5 Series generations', link: '/technical/fitment' },
+] as const
+
 export const DOC_CATEGORIES = [
   'Service manual',
   'Wiring diagram',
@@ -37,4 +41,5 @@ export const DOC_CATEGORIES = [
 export type MaintenanceSystem = typeof MAINTENANCE_SYSTEMS[number]['id']
 export type PerformanceSystem = typeof PERFORMANCE_SYSTEMS[number]['id']
 export type DiagnosisSystem = typeof DIAGNOSIS_SYSTEMS[number]['id']
-export type TechSection = 'documents' | 'maintenance' | 'performance' | 'diagnosis'
+export type AppsSystem = typeof APPS_SYSTEMS[number]['id']
+export type TechSection = 'documents' | 'maintenance' | 'performance' | 'apps' | 'diagnosis'

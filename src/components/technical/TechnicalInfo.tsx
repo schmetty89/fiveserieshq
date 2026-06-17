@@ -6,7 +6,7 @@ import { Upload, CheckCircle, Eye, Download, ChevronRight, ArrowLeft, FileText, 
 import Link from 'next/link'
 import { GENERATIONS, Generation } from '@/types'
 import { GEN_COLORS } from '@/lib/forum-config'
-import { MAINTENANCE_SYSTEMS, PERFORMANCE_SYSTEMS, DIAGNOSIS_SYSTEMS, TechSection } from '@/lib/technical-config'
+import { MAINTENANCE_SYSTEMS, PERFORMANCE_SYSTEMS, DIAGNOSIS_SYSTEMS, APPS_SYSTEMS, TechSection } from '@/lib/technical-config'
 import { getTechDocuments, getTechArticles, getTechArticle } from '@/lib/technical-data'
 import { formatRelativeTime } from '@/lib/utils'
 import { useAuth } from '@/components/auth/AuthProvider'
@@ -82,7 +82,7 @@ function TechnicalInfoInner() {
   }, [activeGen])
 
   const loadArticles = useCallback(async () => {
-    if (activeSection === 'documents') return
+    if (activeSection === 'documents' || activeSection === 'apps') return
     setLoading(true)
     const data = await getTechArticles({
       generation: activeGen,
@@ -181,11 +181,13 @@ function TechnicalInfoInner() {
         <div className="flex items-end justify-between mb-6 pb-5 border-b border-gray-100">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full" style={{ background: genColors.bg, color: genColors.text }}>
-                {activeGen}
-              </span>
+              {activeSection !== 'apps' && (
+                <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full" style={{ background: genColors.bg, color: genColors.text }}>
+                  {activeGen}
+                </span>
+              )}
               <span className="text-xl font-medium text-gray-900 capitalize">
-                {activeSection === 'documents' ? 'Technical documents' : activeSection}
+                {activeSection === 'documents' ? 'Technical documents' : activeSection === 'apps' ? 'Apps' : activeSection}
               </span>
             </div>
             <p className="text-sm text-gray-500">
@@ -193,12 +195,14 @@ function TechnicalInfoInner() {
                 ? 'Factory service manuals, wiring diagrams, and OEM technical references.'
                 : activeSection === 'maintenance'
                 ? 'Verified guides and procedures for keeping your ' + activeGen + ' in top condition.'
+                : activeSection === 'apps'
+                ? 'Interactive tools for all 5 Series generations.'
                 : activeSection === 'diagnosis'
                 ? 'Fault diagnosis resources, DME guides, and known issue references for the ' + activeGen + '.'
                 : 'Upgrade guides and performance build documentation for the ' + activeGen + '.'}
             </p>
           </div>
-          {user && (
+          {user && activeSection !== 'apps' && (
             <button onClick={() => setShowSubmitModal(true)}
               className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-gray-900 text-white text-sm font-medium hover:bg-gray-700 transition-colors flex-shrink-0">
               <Upload size={13} /> Submit
@@ -277,6 +281,22 @@ function TechnicalInfoInner() {
               ))}
             </div>
           )
+        )}
+
+        {/* ── Apps section ── */}
+        {activeSection === 'apps' && (
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {APPS_SYSTEMS.map(sys => (
+              <Link key={sys.id} href={sys.link}
+                className="border border-gray-100 rounded-xl p-4 hover:border-gray-200 hover:bg-gray-50 transition-colors group block">
+                <div className="w-9 h-9 rounded-lg flex items-center justify-center text-xl mb-3 bg-gray-100">
+                  {sys.icon}
+                </div>
+                <p className="text-sm font-medium text-gray-800 group-hover:text-gray-900 mb-1">{sys.name}</p>
+                <p className="text-xs text-gray-400 leading-snug">{sys.desc}</p>
+              </Link>
+            ))}
+          </div>
         )}
 
         {/* ── Maintenance / Performance / Diagnosis sections ── */}
@@ -424,6 +444,7 @@ function GenSidebar({ activeGen, setActiveGen, activeSection, setActiveSection, 
         { id: 'documents',   label: 'Technical documents', icon: '📄' },
         { id: 'maintenance', label: 'Maintenance',          icon: '🔧' },
         { id: 'performance', label: 'Performance',          icon: '🚀' },
+        { id: 'apps',        label: 'Apps',                 icon: '📱' },
         { id: 'diagnosis',   label: 'Fault diagnosis',      icon: '🔍' },
       ] as const).map(s => (
         <button key={s.id} onClick={() => setActiveSection(s.id)}
@@ -436,16 +457,6 @@ function GenSidebar({ activeGen, setActiveGen, activeSection, setActiveSection, 
           <span>{s.label}</span>
         </button>
       ))}
-
-      <div className="pt-2">
-        <Link
-          href={`/technical/fitment`}
-          className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition-colors"
-        >
-          <span>🔩</span>
-          <span>Rim fitment</span>
-        </Link>
-      </div>
 
       {user && (
         <div className="pt-2">
