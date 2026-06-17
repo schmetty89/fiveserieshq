@@ -3,7 +3,7 @@
 import { useState, useRef } from 'react'
 import { X, Loader2, AlertCircle, CheckCircle, Upload, FileText } from 'lucide-react'
 import { GENERATIONS } from '@/types'
-import { MAINTENANCE_SYSTEMS, PERFORMANCE_SYSTEMS, DOC_CATEGORIES } from '@/lib/technical-config'
+import { MAINTENANCE_SYSTEMS, PERFORMANCE_SYSTEMS, DIAGNOSIS_SYSTEMS, DOC_CATEGORIES } from '@/lib/technical-config'
 import { submitTechDocument, submitTechArticle } from '@/lib/technical-data'
 import { useAuth } from '@/components/auth/AuthProvider'
 import { createClient } from '@/lib/supabase'
@@ -52,7 +52,7 @@ export function TechSubmitModal({ defaultGen, defaultSection, onClose }: Props) 
     setError('')
   }
 
-  const systems = form.section === 'performance' ? PERFORMANCE_SYSTEMS : MAINTENANCE_SYSTEMS
+  const systems = form.section === 'diagnosis' ? DIAGNOSIS_SYSTEMS : form.section === 'performance' ? PERFORMANCE_SYSTEMS : MAINTENANCE_SYSTEMS
 
   async function uploadFile(): Promise<string | null> {
     if (!file || !user) return null
@@ -104,7 +104,7 @@ export function TechSubmitModal({ defaultGen, defaultSection, onClose }: Props) 
         await submitTechArticle({
           title: form.title.trim(),
           generation: form.generation,
-          section: form.section as 'maintenance' | 'performance',
+          section: form.section as 'maintenance' | 'performance' | 'diagnosis',
           system: form.system,
           contentType: form.contentType,
           body: form.contentType === 'guide' ? form.body.trim() : undefined,
@@ -167,6 +167,7 @@ export function TechSubmitModal({ defaultGen, defaultSection, onClose }: Props) 
                   { value: 'documents',    label: '📄 Technical documents' },
                   { value: 'maintenance',  label: '🔧 Maintenance' },
                   { value: 'performance',  label: '🚀 Performance' },
+                  { value: 'diagnosis',    label: '🔍 Fault diagnosis' },
                 ].map(s => (
                   <button key={s.value} type="button"
                     onClick={() => setForm(f => ({ ...f, section: s.value, system: '' }))}

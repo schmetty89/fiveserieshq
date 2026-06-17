@@ -140,7 +140,7 @@ export default function AdminTechnicalPage() {
                   <ReviewCard
                     key={article.id}
                     title={article.title}
-                    meta={`${article.generation} · ${article.section} · ${article.system} · ${article.content_type} · by ${author?.username ?? 'Unknown'}`}
+                    meta={`${article.generation} · ${article.section === 'performance' ? 'modifications' : article.section} · ${article.system} · ${article.content_type} · by ${author?.username ?? 'Unknown'}`}
                     expandContent={
                       <div className="space-y-3">
                         {article.body && (

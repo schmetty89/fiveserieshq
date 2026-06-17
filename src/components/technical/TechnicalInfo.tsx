@@ -6,7 +6,7 @@ import { Upload, CheckCircle, Eye, Download, ChevronRight, ArrowLeft, FileText, 
 import Link from 'next/link'
 import { GENERATIONS, Generation } from '@/types'
 import { GEN_COLORS } from '@/lib/forum-config'
-import { MAINTENANCE_SYSTEMS, PERFORMANCE_SYSTEMS, TechSection } from '@/lib/technical-config'
+import { MAINTENANCE_SYSTEMS, PERFORMANCE_SYSTEMS, DIAGNOSIS_SYSTEMS, TechSection } from '@/lib/technical-config'
 import { getTechDocuments, getTechArticles, getTechArticle } from '@/lib/technical-data'
 import { formatRelativeTime } from '@/lib/utils'
 import { useAuth } from '@/components/auth/AuthProvider'
@@ -86,7 +86,7 @@ function TechnicalInfoInner() {
     setLoading(true)
     const data = await getTechArticles({
       generation: activeGen,
-      section: activeSection as 'maintenance' | 'performance',
+      section: activeSection as 'maintenance' | 'performance' | 'diagnosis',
       system: activeSystem || undefined,
     })
     setArticles(data as TechArticle[])
@@ -117,7 +117,7 @@ function TechnicalInfoInner() {
     if (activeArticleId) loadArticle()
   }, [activeArticleId, loadArticle])
 
-  const systems = activeSection === 'performance' ? PERFORMANCE_SYSTEMS : MAINTENANCE_SYSTEMS
+  const systems = activeSection === 'diagnosis' ? DIAGNOSIS_SYSTEMS : activeSection === 'performance' ? PERFORMANCE_SYSTEMS : MAINTENANCE_SYSTEMS
   const docCategories = Array.from(new Set(docs.map(d => d.category)))
 
   // ── Article detail view ──
@@ -193,6 +193,8 @@ function TechnicalInfoInner() {
                 ? 'Factory service manuals, wiring diagrams, and OEM technical references.'
                 : activeSection === 'maintenance'
                 ? 'Verified guides and procedures for keeping your ' + activeGen + ' in top condition.'
+                : activeSection === 'diagnosis'
+                ? 'Fault diagnosis resources, DME guides, and known issue references for the ' + activeGen + '.'
                 : 'Upgrade guides and performance build documentation for the ' + activeGen + '.'}
             </p>
           </div>
@@ -277,8 +279,8 @@ function TechnicalInfoInner() {
           )
         )}
 
-        {/* ── Maintenance / Performance sections ── */}
-        {(activeSection === 'maintenance' || activeSection === 'performance') && !activeSystem && (
+        {/* ── Maintenance / Performance / Diagnosis sections ── */}
+        {(activeSection === 'maintenance' || activeSection === 'performance' || activeSection === 'diagnosis') && !activeSystem && (
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {systems.map(sys => {
               const sysArticles = articles.filter(a => a.system === sys.id)
@@ -298,7 +300,7 @@ function TechnicalInfoInner() {
         )}
 
         {/* ── Article list for a system ── */}
-        {(activeSection === 'maintenance' || activeSection === 'performance') && activeSystem && (
+        {(activeSection === 'maintenance' || activeSection === 'performance' || activeSection === 'diagnosis') && activeSystem && (
           <div>
             <button onClick={() => setActiveSystem(null)}
               className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 mb-5 transition-colors">
@@ -422,6 +424,7 @@ function GenSidebar({ activeGen, setActiveGen, activeSection, setActiveSection, 
         { id: 'documents',   label: 'Technical documents', icon: '📄' },
         { id: 'maintenance', label: 'Maintenance',          icon: '🔧' },
         { id: 'performance', label: 'Performance',          icon: '🚀' },
+        { id: 'diagnosis',   label: 'Fault diagnosis',      icon: '🔍' },
       ] as const).map(s => (
         <button key={s.id} onClick={() => setActiveSection(s.id)}
           className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors ${

@@ -16,6 +16,13 @@ export const PERFORMANCE_SYSTEMS = [
   { id: 'ecu',             name: 'ECU & coding',             icon: '💻', desc: 'Flash tunes, BimmerCode, DME unlocks' },
 ] as const
 
+export const DIAGNOSIS_SYSTEMS = [
+  { id: 'dme',              name: 'DME / ECU',          icon: '💻', desc: 'DME faults, flash counters, ECU hardware issues' },
+  { id: 'coding',           name: 'BMW Coding',         icon: '🔌', desc: 'BimmerCode, E-sys, NCS Expert, ISTA coding procedures' },
+  { id: 'fault-codes',      name: 'Fault codes',        icon: '⚠️', desc: 'DTC references, code meanings, and clearing procedures' },
+  { id: 'mechanical-faults',name: 'Mechanical faults',  icon: '🔩', desc: 'Common failure points, diagnosis guides, known issues' },
+] as const
+
 export const DOC_CATEGORIES = [
   'Service manual',
   'Wiring diagram',
@@ -29,4 +36,5 @@ export const DOC_CATEGORIES = [
 
 export type MaintenanceSystem = typeof MAINTENANCE_SYSTEMS[number]['id']
 export type PerformanceSystem = typeof PERFORMANCE_SYSTEMS[number]['id']
-export type TechSection = 'documents' | 'maintenance' | 'performance'
+export type DiagnosisSystem = typeof DIAGNOSIS_SYSTEMS[number]['id']
+export type TechSection = 'documents' | 'maintenance' | 'performance' | 'diagnosis'
