@@ -19,7 +19,7 @@ export async function getTechArticles({
   system,
 }: {
   generation: string
-  section: 'maintenance' | 'performance'
+  section: 'maintenance' | 'performance' | 'diagnosis'
   system?: string
 }) {
   const supabase = createClient()
@@ -86,7 +86,7 @@ export async function submitTechDocument(doc: {
 export async function submitTechArticle(article: {
   title: string
   generation: string
-  section: 'maintenance' | 'performance'
+  section: 'maintenance' | 'performance' | 'diagnosis'
   system: string
   contentType: 'guide' | 'pdf'
   body?: string
