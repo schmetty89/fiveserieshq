@@ -285,7 +285,7 @@ export function TechSubmitModal({ defaultGen, defaultSection, onClose }: Props) 
                             <div className="grid grid-cols-2 gap-x-3 gap-y-1">
                               {group.tools.map((tool) => {
                                 const id = `${group.category}::${tool}`
-                                const checked = (guide[field.key]?.selected ?? []).includes(id)
+                                const checked = ((guide[field.key] as { selected?: string[] } | undefined)?.selected ?? []).includes(id)
                                 return (
                                   <label key={id} className="flex items-center gap-2 text-sm text-gray-700">
                                     <input
