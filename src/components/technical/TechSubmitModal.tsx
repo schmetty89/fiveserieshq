@@ -293,9 +293,9 @@ export function TechSubmitModal({ defaultGen, defaultSection, onClose }: Props) 
                                       checked={checked}
                                       onChange={(e) =>
                                         setGuide((g) => {
-                                          const cur: string[] = g[field.key]?.selected ?? []
+                                          const cur: string[] = (g[field.key] as { selected?: string[] } | undefined)?.selected ?? []
                                           const next = e.target.checked ? [...cur, id] : cur.filter((x: string) => x !== id)
-                                          return { ...g, [field.key]: { ...(g[field.key] ?? {}), selected: next } }
+                                          return { ...g, [field.key]: { ...((g[field.key] as object) ?? {}), selected: next } }
                                         })
                                       }
                                     />
@@ -312,8 +312,8 @@ export function TechSubmitModal({ defaultGen, defaultSection, onClose }: Props) 
                             <input
                               type="text"
                               placeholder="Other tools (comma-separated)"
-                              value={guide[field.key]?.custom ?? ''}
-                              onChange={(e) => setGuide((g) => ({ ...g, [field.key]: { ...(g[field.key] ?? {}), custom: e.target.value } }))}
+                              value={(guide[field.key] as { custom?: string } | undefined)?.custom ?? ''}
+                              onChange={(e) => setGuide((g) => ({ ...g, [field.key]: { ...((g[field.key] as object) ?? {}), custom: e.target.value } }))}
                               className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2"
                             />
                           </div>
