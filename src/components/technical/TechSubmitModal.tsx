@@ -7,7 +7,7 @@ import { MAINTENANCE_SYSTEMS, PERFORMANCE_SYSTEMS, DIAGNOSIS_SYSTEMS, DOC_CATEGO
 import { submitTechDocument, submitTechArticle } from '@/lib/technical-data'
 import { useAuth } from '@/components/auth/AuthProvider'
 import { createClient } from '@/lib/supabase'
-import { GUIDE_FIELDS, composeGuideBody, type GuideSection } from '@/lib/article-fields'
+import { GUIDE_FIELDS, composeGuideBody, type GuideSection, SOCKET_CATEGORIES, SOCKET_VARIANTS, ALL_DRIVES, availableDrives, ratchetCount, type ChecklistValue } from '@/lib/article-fields'
 
 interface Props {
   defaultGen?: string
@@ -30,7 +30,7 @@ export function TechSubmitModal({ defaultGen, defaultSection, onClose }: Props) 
     yearRange: '',
     body: '',
   })
-  const [guide, setGuide] = useState<Record<string, string | number | { selected?: string[]; custom?: string }>>({})
+  const [guide, setGuide] = useState<Record<string, string | number | ChecklistValue>>({})
   const str = (k: string) => { const v = guide[k]; return typeof v === 'string' ? v : '' }
   const [file, setFile] = useState<File | null>(null)
   const [uploading, setUploading] = useState(false)
@@ -280,45 +280,127 @@ export function TechSubmitModal({ defaultGen, defaultSection, onClose }: Props) 
                       </div>
                     ) : field.type === 'checklist' ? (
                       <div className="space-y-3 max-h-72 overflow-y-auto border border-gray-200 rounded-lg p-3">
-                        {(field.groups ?? []).map((group) => (
-                          <div key={group.category}>
-                            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">{group.category}</p>
-                            <div className="grid grid-cols-2 gap-x-3 gap-y-1">
-                              {group.tools.map((tool) => {
-                                const id = `${group.category}::${tool}`
-                                const checked = ((guide[field.key] as { selected?: string[] } | undefined)?.selected ?? []).includes(id)
+                        {(() => {
+                          const tools = (guide[field.key] as ChecklistValue) ?? {}
+                          const sel = tools.selected ?? []
+                          const meta = tools.meta ?? {}
+                          const drives = availableDrives(sel)
+                          const showSocketDrive = ratchetCount(sel) >= 2 && drives.length >= 1
+
+                          const setMeta = (id: string, patch: Partial<{ drive: string; variants: string[] }>) =>
+                            setGuide((g) => {
+                              const cur = (g[field.key] as ChecklistValue) ?? {}
+                              const m = { ...(cur.meta ?? {}) }
+                              m[id] = { ...(m[id] ?? {}), ...patch }
+                              return { ...g, [field.key]: { ...cur, meta: m } }
+                            })
+
+                          const toggleVariant = (id: string, variant: string, on: boolean) =>
+                            setGuide((g) => {
+                              const cur = (g[field.key] as ChecklistValue) ?? {}
+                              const m = { ...(cur.meta ?? {}) }
+                              const existing = m[id]?.variants ?? []
+                              const next = on ? [...existing, variant] : existing.filter((x) => x !== variant)
+                              m[id] = { ...(m[id] ?? {}), variants: next }
+                              return { ...g, [field.key]: { ...cur, meta: m } }
+                            })
+
+                          return (
+                            <>
+                              {(field.groups ?? []).map((group) => {
+                                const isSocketCat = (SOCKET_CATEGORIES as readonly string[]).includes(group.category)
                                 return (
-                                  <label key={id} className="flex items-center gap-2 text-sm text-gray-700">
-                                    <input
-                                      type="checkbox"
-                                      checked={checked}
-                                      onChange={(e) =>
-                                        setGuide((g) => {
-                                          const cur: string[] = (g[field.key] as { selected?: string[] } | undefined)?.selected ?? []
-                                          const next = e.target.checked ? [...cur, id] : cur.filter((x: string) => x !== id)
-                                          return { ...g, [field.key]: { ...((g[field.key] as object) ?? {}), selected: next } }
-                                        })
-                                      }
-                                    />
-                                    {tool}
-                                  </label>
+                                  <div key={group.category}>
+                                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">{group.category}</p>
+                                    <div className="grid grid-cols-2 gap-x-3 gap-y-1">
+                                      {group.tools.map((tool) => {
+                                        const id = `${group.category}::${tool}`
+                                        const checked = sel.includes(id)
+                                        const isTorque = group.category === 'Ratchets & Drive Tools' && tool === 'Torque Wrench'
+                                        return (
+                                          <div key={id} className="col-span-1">
+                                            <label className="flex items-center gap-2 text-sm text-gray-700">
+                                              <input
+                                                type="checkbox"
+                                                checked={checked}
+                                                onChange={(e) =>
+                                                  setGuide((g) => {
+                                                    const cur = (g[field.key] as ChecklistValue) ?? {}
+                                                    const curSel = cur.selected ?? []
+                                                    const next = e.target.checked ? [...curSel, id] : curSel.filter((x) => x !== id)
+                                                    return { ...g, [field.key]: { ...cur, selected: next } }
+                                                  })
+                                                }
+                                              />
+                                              {tool}
+                                            </label>
+
+                                            {checked && isTorque && (
+                                              <div className="ml-6 mt-1">
+                                                <select
+                                                  value={meta[id]?.drive ?? ''}
+                                                  onChange={(e) => setMeta(id, { drive: e.target.value })}
+                                                  className="text-xs border border-gray-200 rounded px-2 py-1"
+                                                >
+                                                  <option value="">Drive size…</option>
+                                                  {ALL_DRIVES.map((d) => <option key={d} value={d}>{d}</option>)}
+                                                </select>
+                                              </div>
+                                            )}
+
+                                            {checked && isSocketCat && (
+                                              <div className="ml-6 mt-1 space-y-1">
+                                                {showSocketDrive && (
+                                                  <select
+                                                    value={meta[id]?.drive ?? ''}
+                                                    onChange={(e) => setMeta(id, { drive: e.target.value })}
+                                                    className="text-xs border border-gray-200 rounded px-2 py-1"
+                                                  >
+                                                    <option value="">Drive size…</option>
+                                                    {drives.map((d) => <option key={d} value={d}>{d}</option>)}
+                                                  </select>
+                                                )}
+                                                <div className="flex flex-wrap gap-x-3 gap-y-0.5">
+                                                  {SOCKET_VARIANTS.map((variant) => (
+                                                    <label key={variant} className="flex items-center gap-1 text-xs text-gray-600">
+                                                      <input
+                                                        type="checkbox"
+                                                        checked={(meta[id]?.variants ?? []).includes(variant)}
+                                                        onChange={(e) => toggleVariant(id, variant, e.target.checked)}
+                                                      />
+                                                      {variant}
+                                                    </label>
+                                                  ))}
+                                                </div>
+                                              </div>
+                                            )}
+                                          </div>
+                                        )
+                                      })}
+                                    </div>
+                                  </div>
                                 )
                               })}
-                            </div>
-                          </div>
-                        ))}
-                        {field.allowCustom && (
-                          <div>
-                            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Other</p>
-                            <input
-                              type="text"
-                              placeholder="Other tools (comma-separated)"
-                              value={(guide[field.key] as { custom?: string } | undefined)?.custom ?? ''}
-                              onChange={(e) => setGuide((g) => ({ ...g, [field.key]: { ...((g[field.key] as object) ?? {}), custom: e.target.value } }))}
-                              className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2"
-                            />
-                          </div>
-                        )}
+                              {field.allowCustom && (
+                                <div>
+                                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Other</p>
+                                  <input
+                                    type="text"
+                                    placeholder="Other tools (comma-separated)"
+                                    value={tools.custom ?? ''}
+                                    onChange={(e) =>
+                                      setGuide((g) => {
+                                        const cur = (g[field.key] as ChecklistValue) ?? {}
+                                        return { ...g, [field.key]: { ...cur, custom: e.target.value } }
+                                      })
+                                    }
+                                    className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2"
+                                  />
+                                </div>
+                              )}
+                            </>
+                          )
+                        })()}
                       </div>
                     ) : field.type === 'select' ? (
                       <select

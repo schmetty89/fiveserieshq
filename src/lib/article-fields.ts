@@ -12,22 +12,32 @@ export interface GuideField {
   key: string
   label: string
   type: 'text' | 'textarea' | 'select' | 'wrench' | 'checklist'
-  options?: string[]      // select
+  options?: string[]
   placeholder?: string
-  list?: boolean          // textarea -> each non-empty line becomes a bullet
-  groups?: ToolGroup[]    // checklist
-  allowCustom?: boolean   // checklist -> free-text "Other" entry
+  list?: boolean
+  groups?: ToolGroup[]
+  allowCustom?: boolean
 }
 
-// Source: community tool list. Used by the Tools checklist.
+// Categories whose checked items get drive-size + variant sub-options.
+export const SOCKET_CATEGORIES = ['Metric Sockets', 'E-Torx Sockets', 'Torx Sockets'] as const
+// Maps a ratchet tool name to the drive size it implies. Generic ratchets contribute nothing.
+export const RATCHET_DRIVE: Record<string, string> = {
+  '1/4" Ratchet': '1/4"',
+  '3/8" Ratchet': '3/8"',
+  '1/2" Ratchet': '1/2"',
+}
+export const ALL_DRIVES = ['1/4"', '3/8"', '1/2"']
+export const SOCKET_VARIANTS = ['standard', 'deep', 'impact', 'deep impact']
+
 export const TOOL_GROUPS: ToolGroup[] = [
   { category: 'Ratchets & Drive Tools', tools: ['1/4" Ratchet', '3/8" Ratchet', '1/2" Ratchet', 'Breaker Bar', 'Torque Wrench', 'Extensions', 'Universal Joint / Wobble Adapter', 'Flex Head Ratchet', 'Stubby Ratchet'] },
   { category: 'Metric Sockets', tools: ['6mm', '7mm', '8mm', '9mm', '10mm', '11mm', '12mm', '13mm', '14mm', '15mm', '16mm', '17mm', '18mm', '19mm', '20mm', '21mm', '22mm', '23mm', '24mm', '25mm', '26mm', '27mm', '28mm', '29mm', '30mm', '31mm', '32mm', '33mm', '34mm', '35mm', '36mm'] },
   { category: 'E-Torx Sockets', tools: ['E4', 'E5', 'E6', 'E7', 'E8', 'E10', 'E11', 'E12', 'E14', 'E16', 'E18', 'E20', 'E24'] },
-  { category: 'Torx Bits', tools: ['T8', 'T10', 'T15', 'T20', 'T25', 'T27', 'T30', 'T40', 'T45', 'T50', 'T55', 'T60'] },
-  { category: 'Hex / Allen Bits', tools: ['3mm', '4mm', '5mm', '6mm', '7mm', '8mm', '10mm', '12mm', '14mm', '17mm'] },
+  { category: 'Torx Sockets', tools: ['T8', 'T10', 'T15', 'T20', 'T25', 'T27', 'T30', 'T40', 'T45', 'T50', 'T55', 'T60'] },
+  { category: 'Allen Sockets', tools: ['3mm', '4mm', '5mm', '6mm', '7mm', '8mm', '10mm', '12mm', '14mm', '17mm'] },
   { category: 'Basic Hand Tools', tools: ['Screwdrivers', 'Pliers', 'Needle Nose Pliers', 'Locking Pliers', 'Trim Removal Tools', 'Pry Bar'] },
-  { category: 'BMW / Specialty Tools', tools: ['Pick Set', 'Spark Plug Socket', 'Oxygen Sensor Socket', 'Fan Clutch Wrench', 'Fan Clutch Holding Tool', 'Fuel Line Disconnect Tool', 'Injector Puller', 'Valve Spring Compressor', 'Timing Tool Kit', 'Crankshaft Locking Tool', 'Camshaft Locking Tool', 'VANOS Timing Tool', 'Engine Support Bar', 'Transmission Jack', 'Clutch Alignment Tool', 'Bearing Puller', 'Bearing Press', 'Ball Joint Separator', 'Tie Rod Separator', 'Spring Compressor', 'Cooling System Pressure Tester', 'Vacuum Tester', 'Smoke Tester', 'Compression Tester', 'Leak Down Tester'] },
+  { category: 'BMW / Specialty Tools', tools: ['Pick Set', 'Spark Plug Socket', 'Oxygen Sensor Socket', 'Fan Clutch Wrench', 'Fan Clutch Holding Tool', 'Fuel Line Disconnect Tool', 'Injector Puller', 'Valve Spring Compressor', 'Timing Tool Kit', 'Crankshaft Locking Tool', 'Camshaft Locking Tool', 'VANOS Timing Tool', 'Engine Support Bar', 'Engine Stand', 'Transmission Jack', 'Clutch Alignment Tool', 'Bearing Puller', 'Bearing Press', 'Ball Joint Separator', 'Tie Rod Separator', 'Spring Compressor', 'Cooling System Pressure Tester', 'Vacuum Tester', 'Smoke Tester', 'Compression Tester', 'Leak Down Tester'] },
   { category: 'Lifting Equipment', tools: ['Floor Jack', 'QuickJack', '2-Post Lift', 'Jack Stands', 'Wheel Chocks', 'Engine Hoist'] },
   { category: 'Electrical & Diagnostic Tools', tools: ['Multimeter', 'Battery Charger', 'Power Probe', 'Soldering Iron', 'Heat Gun', 'OBD Scanner', 'ISTA', 'INPA', 'E-Sys', 'BimmerLink', 'BimmerCode'] },
   { category: 'Consumables', tools: ['Brake Cleaner', 'Penetrating Oil', 'Anti-Seize', 'Thread Locker', 'Dielectric Grease', 'Assembly Lube', 'RTV Sealant', 'Zip Ties'] },
@@ -60,7 +70,26 @@ export const GUIDE_FIELDS: Record<GuideSection, GuideField[]> = {
   ],
 }
 
-type ChecklistValue = { selected?: string[]; custom?: string }
+// A checked tool's optional sub-selections.
+export type ToolMeta = { drive?: string; variants?: string[] }
+export type ChecklistValue = { selected?: string[]; meta?: Record<string, ToolMeta>; custom?: string }
+
+// Drive sizes available given which ratchets are checked (composite ids).
+export function availableDrives(selected: string[]): string[] {
+  const drives: string[] = []
+  for (const id of selected) {
+    if (!id.startsWith('Ratchets & Drive Tools::')) continue
+    const tool = id.split('::')[1]
+    const d = RATCHET_DRIVE[tool]
+    if (d && !drives.includes(d)) drives.push(d)
+  }
+  return ALL_DRIVES.filter((d) => drives.includes(d))
+}
+
+// Count of selected sized OR generic ratchets (used to gate the per-socket drive picker).
+export function ratchetCount(selected: string[]): number {
+  return selected.filter((s) => s.startsWith('Ratchets & Drive Tools::')).length
+}
 
 export function composeGuideBody(section: GuideSection, values: Record<string, unknown>): string {
   const fields = GUIDE_FIELDS[section] ?? []
@@ -77,12 +106,21 @@ export function composeGuideBody(section: GuideSection, values: Record<string, u
     if (f.type === 'checklist') {
       const cv = (v ?? {}) as ChecklistValue
       const sel = Array.isArray(cv.selected) ? cv.selected : []
+      const meta = cv.meta ?? {}
       const custom = (cv.custom ?? '').trim()
       if (sel.length === 0 && !custom) continue
       const lines: string[] = []
       for (const g of f.groups ?? []) {
         const inGroup = g.tools.filter((t) => sel.includes(`${g.category}::${t}`))
-        if (inGroup.length) lines.push(`${g.category}: ${inGroup.join(', ')}`)
+        if (!inGroup.length) continue
+        const rendered = inGroup.map((t) => {
+          const m = meta[`${g.category}::${t}`]
+          const extras: string[] = []
+          if (m?.drive) extras.push(m.drive)
+          if (m?.variants && m.variants.length) extras.push(...m.variants)
+          return extras.length ? `${t} (${extras.join(', ')})` : t
+        })
+        lines.push(`${g.category}: ${rendered.join(', ')}`)
       }
       if (custom) lines.push(`Other: ${custom}`)
       blocks.push(`${f.label}:\n${lines.join('\n')}`)
