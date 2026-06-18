@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef } from 'react'
-import { X, Loader2, AlertCircle, CheckCircle, Upload, FileText } from 'lucide-react'
+import { X, Loader2, AlertCircle, CheckCircle, Upload, FileText, Wrench } from 'lucide-react'
 import { GENERATIONS } from '@/types'
 import { MAINTENANCE_SYSTEMS, PERFORMANCE_SYSTEMS, DIAGNOSIS_SYSTEMS, DOC_CATEGORIES } from '@/lib/technical-config'
 import { submitTechDocument, submitTechArticle } from '@/lib/technical-data'
@@ -30,7 +30,7 @@ export function TechSubmitModal({ defaultGen, defaultSection, onClose }: Props) 
     yearRange: '',
     body: '',
   })
-  const [guide, setGuide] = useState<Record<string, string>>({})
+  const [guide, setGuide] = useState<Record<string, any>>({})
   const [file, setFile] = useState<File | null>(null)
   const [uploading, setUploading] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -260,7 +260,66 @@ export function TechSubmitModal({ defaultGen, defaultSection, onClose }: Props) 
                 {(GUIDE_FIELDS[form.section as GuideSection] ?? []).map(field => (
                   <div key={field.key}>
                     <label className="block text-sm font-medium text-gray-700 mb-1.5">{field.label}</label>
-                    {field.type === 'select' ? (
+                    {field.type === 'wrench' ? (
+                      <div className="flex items-center gap-1.5">
+                        {[1, 2, 3, 4, 5].map((n) => (
+                          <button
+                            key={n}
+                            type="button"
+                            onClick={() => setGuide((g) => ({ ...g, [field.key]: n }))}
+                            className="p-1"
+                            aria-label={`${n} wrench${n > 1 ? 'es' : ''}`}
+                          >
+                            <Wrench
+                              size={22}
+                              className={(Number(guide[field.key]) || 0) >= n ? 'text-gray-900' : 'text-gray-300'}
+                            />
+                          </button>
+                        ))}
+                      </div>
+                    ) : field.type === 'checklist' ? (
+                      <div className="space-y-3 max-h-72 overflow-y-auto border border-gray-200 rounded-lg p-3">
+                        {(field.groups ?? []).map((group) => (
+                          <div key={group.category}>
+                            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">{group.category}</p>
+                            <div className="grid grid-cols-2 gap-x-3 gap-y-1">
+                              {group.tools.map((tool) => {
+                                const id = `${group.category}::${tool}`
+                                const checked = (guide[field.key]?.selected ?? []).includes(id)
+                                return (
+                                  <label key={id} className="flex items-center gap-2 text-sm text-gray-700">
+                                    <input
+                                      type="checkbox"
+                                      checked={checked}
+                                      onChange={(e) =>
+                                        setGuide((g) => {
+                                          const cur: string[] = g[field.key]?.selected ?? []
+                                          const next = e.target.checked ? [...cur, id] : cur.filter((x: string) => x !== id)
+                                          return { ...g, [field.key]: { ...(g[field.key] ?? {}), selected: next } }
+                                        })
+                                      }
+                                    />
+                                    {tool}
+                                  </label>
+                                )
+                              })}
+                            </div>
+                          </div>
+                        ))}
+                        {field.allowCustom && (
+                          <div>
+                            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Other</p>
+                            <input
+                              type="text"
+                              placeholder="Other tools (comma-separated)"
+                              value={guide[field.key]?.custom ?? ''}
+                              onChange={(e) => setGuide((g) => ({ ...g, [field.key]: { ...(g[field.key] ?? {}), custom: e.target.value } }))}
+                              className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2"
+                            />
+                          </div>
+                        )}
+                      </div>
+                    ) : field.type === 'select' ? (
                       <select
                         value={guide[field.key] ?? ''}
                         onChange={(e) => setGuide((g) => ({ ...g, [field.key]: e.target.value }))}
