@@ -7,7 +7,7 @@ import { MAINTENANCE_SYSTEMS, PERFORMANCE_SYSTEMS, DIAGNOSIS_SYSTEMS, DOC_CATEGO
 import { submitTechDocument, submitTechArticle } from '@/lib/technical-data'
 import { useAuth } from '@/components/auth/AuthProvider'
 import { createClient } from '@/lib/supabase'
-import { GUIDE_FIELDS, composeGuideBody, type GuideSection, SOCKET_CATEGORIES, SOCKET_VARIANTS, ALL_DRIVES, availableDrives, ratchetCount, type ChecklistValue } from '@/lib/article-fields'
+import { GUIDE_FIELDS, composeGuideBody, type GuideSection, SOCKET_CATEGORIES, ALL_DRIVES, availableDrives, ratchetCount, variantsFor, validateChecklist, type ChecklistValue } from '@/lib/article-fields'
 
 interface Props {
   defaultGen?: string
@@ -105,6 +105,8 @@ export function TechSubmitModal({ defaultGen, defaultSection, onClose }: Props) 
         if (form.contentType === 'guide') {
           const composed = composeGuideBody(form.section as GuideSection, guide)
           if (!composed) { setError('Please fill in at least one field.'); setLoading(false); return }
+          const checklistError = validateChecklist(guide['tools'] as ChecklistValue | undefined)
+          if (checklistError) { setError(checklistError); setLoading(false); return }
         }
         if (form.contentType === 'pdf' && !file) { setError('Please upload a PDF file.'); setLoading(false); return }
         await submitTechArticle({
@@ -287,7 +289,7 @@ export function TechSubmitModal({ defaultGen, defaultSection, onClose }: Props) 
                           const drives = availableDrives(sel)
                           const showSocketDrive = ratchetCount(sel) >= 2 && drives.length >= 1
 
-                          const setMeta = (id: string, patch: Partial<{ drive: string; variants: string[] }>) =>
+                          const setMeta = (id: string, patch: Partial<{ drive: string }>) =>
                             setGuide((g) => {
                               const cur = (g[field.key] as ChecklistValue) ?? {}
                               const m = { ...(cur.meta ?? {}) }
@@ -295,13 +297,47 @@ export function TechSubmitModal({ defaultGen, defaultSection, onClose }: Props) 
                               return { ...g, [field.key]: { ...cur, meta: m } }
                             })
 
+                          const toggleSelected = (id: string, on: boolean) =>
+                            setGuide((g) => {
+                              const cur = (g[field.key] as ChecklistValue) ?? {}
+                              const curSel = cur.selected ?? []
+                              const next = on ? [...curSel, id] : curSel.filter((x) => x !== id)
+                              return { ...g, [field.key]: { ...cur, selected: next } }
+                            })
+
+                          const toggleDrive = (id: string, drive: string, on: boolean) =>
+                            setGuide((g) => {
+                              const cur = (g[field.key] as ChecklistValue) ?? {}
+                              const m = { ...(cur.meta ?? {}) }
+                              const entry = { ...(m[id] ?? {}) }
+                              const d = { ...(entry.drives ?? {}) }
+                              if (on) { if (!d[drive]) d[drive] = [] } else { delete d[drive] }
+                              entry.drives = d
+                              m[id] = entry
+                              return { ...g, [field.key]: { ...cur, meta: m } }
+                            })
+
+                          const toggleDriveVariant = (id: string, drive: string, variant: string, on: boolean) =>
+                            setGuide((g) => {
+                              const cur = (g[field.key] as ChecklistValue) ?? {}
+                              const m = { ...(cur.meta ?? {}) }
+                              const entry = { ...(m[id] ?? {}) }
+                              const d = { ...(entry.drives ?? {}) }
+                              const list = d[drive] ?? []
+                              d[drive] = on ? [...list, variant] : list.filter((x) => x !== variant)
+                              entry.drives = d
+                              m[id] = entry
+                              return { ...g, [field.key]: { ...cur, meta: m } }
+                            })
+
                           const toggleVariant = (id: string, variant: string, on: boolean) =>
                             setGuide((g) => {
                               const cur = (g[field.key] as ChecklistValue) ?? {}
                               const m = { ...(cur.meta ?? {}) }
-                              const existing = m[id]?.variants ?? []
-                              const next = on ? [...existing, variant] : existing.filter((x) => x !== variant)
-                              m[id] = { ...(m[id] ?? {}), variants: next }
+                              const entry = { ...(m[id] ?? {}) }
+                              const list = entry.variants ?? []
+                              entry.variants = on ? [...list, variant] : list.filter((x) => x !== variant)
+                              m[id] = entry
                               return { ...g, [field.key]: { ...cur, meta: m } }
                             })
 
@@ -320,18 +356,7 @@ export function TechSubmitModal({ defaultGen, defaultSection, onClose }: Props) 
                                         return (
                                           <div key={id} className="col-span-1">
                                             <label className="flex items-center gap-2 text-sm text-gray-700">
-                                              <input
-                                                type="checkbox"
-                                                checked={checked}
-                                                onChange={(e) =>
-                                                  setGuide((g) => {
-                                                    const cur = (g[field.key] as ChecklistValue) ?? {}
-                                                    const curSel = cur.selected ?? []
-                                                    const next = e.target.checked ? [...curSel, id] : curSel.filter((x) => x !== id)
-                                                    return { ...g, [field.key]: { ...cur, selected: next } }
-                                                  })
-                                                }
-                                              />
+                                              <input type="checkbox" checked={checked} onChange={(e) => toggleSelected(id, e.target.checked)} />
                                               {tool}
                                             </label>
 
@@ -348,30 +373,48 @@ export function TechSubmitModal({ defaultGen, defaultSection, onClose }: Props) 
                                               </div>
                                             )}
 
-                                            {checked && isSocketCat && (
+                                            {checked && isSocketCat && showSocketDrive && (
                                               <div className="ml-6 mt-1 space-y-1">
-                                                {showSocketDrive && (
-                                                  <select
-                                                    value={meta[id]?.drive ?? ''}
-                                                    onChange={(e) => setMeta(id, { drive: e.target.value })}
-                                                    className="text-xs border border-gray-200 rounded px-2 py-1"
-                                                  >
-                                                    <option value="">Drive size…</option>
-                                                    {drives.map((d) => <option key={d} value={d}>{d}</option>)}
-                                                  </select>
-                                                )}
-                                                <div className="flex flex-wrap gap-x-3 gap-y-0.5">
-                                                  {SOCKET_VARIANTS.map((variant) => (
-                                                    <label key={variant} className="flex items-center gap-1 text-xs text-gray-600">
-                                                      <input
-                                                        type="checkbox"
-                                                        checked={(meta[id]?.variants ?? []).includes(variant)}
-                                                        onChange={(e) => toggleVariant(id, variant, e.target.checked)}
-                                                      />
-                                                      {variant}
-                                                    </label>
-                                                  ))}
-                                                </div>
+                                                {drives.map((d) => {
+                                                  const driveOn = !!(meta[id]?.drives && d in (meta[id]?.drives ?? {}))
+                                                  return (
+                                                    <div key={d}>
+                                                      <label className="flex items-center gap-1 text-xs text-gray-600">
+                                                        <input type="checkbox" checked={driveOn} onChange={(e) => toggleDrive(id, d, e.target.checked)} />
+                                                        {d} drive
+                                                      </label>
+                                                      {driveOn && (
+                                                        <div className="ml-5 flex flex-wrap gap-x-3 gap-y-0.5">
+                                                          {variantsFor(group.category).map((variant) => (
+                                                            <label key={variant} className="flex items-center gap-1 text-xs text-gray-500">
+                                                              <input
+                                                                type="checkbox"
+                                                                checked={(meta[id]?.drives?.[d] ?? []).includes(variant)}
+                                                                onChange={(e) => toggleDriveVariant(id, d, variant, e.target.checked)}
+                                                              />
+                                                              {variant}
+                                                            </label>
+                                                          ))}
+                                                        </div>
+                                                      )}
+                                                    </div>
+                                                  )
+                                                })}
+                                              </div>
+                                            )}
+
+                                            {checked && isSocketCat && !showSocketDrive && (
+                                              <div className="ml-6 mt-1 flex flex-wrap gap-x-3 gap-y-0.5">
+                                                {variantsFor(group.category).map((variant) => (
+                                                  <label key={variant} className="flex items-center gap-1 text-xs text-gray-600">
+                                                    <input
+                                                      type="checkbox"
+                                                      checked={(meta[id]?.variants ?? []).includes(variant)}
+                                                      onChange={(e) => toggleVariant(id, variant, e.target.checked)}
+                                                    />
+                                                    {variant}
+                                                  </label>
+                                                ))}
                                               </div>
                                             )}
                                           </div>

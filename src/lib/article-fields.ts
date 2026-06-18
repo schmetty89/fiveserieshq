@@ -19,8 +19,8 @@ export interface GuideField {
   allowCustom?: boolean
 }
 
-// Categories whose checked items get drive-size + variant sub-options.
-export const SOCKET_CATEGORIES = ['Metric Sockets', 'E-Torx Sockets', 'Torx Sockets'] as const
+// Socket categories that get drive-size + variant sub-options.
+export const SOCKET_CATEGORIES = ['Metric Sockets', 'E-Torx Sockets', 'Torx Sockets', 'Allen Sockets'] as const
 // Maps a ratchet tool name to the drive size it implies. Generic ratchets contribute nothing.
 export const RATCHET_DRIVE: Record<string, string> = {
   '1/4" Ratchet': '1/4"',
@@ -28,7 +28,15 @@ export const RATCHET_DRIVE: Record<string, string> = {
   '1/2" Ratchet': '1/2"',
 }
 export const ALL_DRIVES = ['1/4"', '3/8"', '1/2"']
-export const SOCKET_VARIANTS = ['standard', 'deep', 'impact', 'deep impact']
+
+const VARIANTS_FULL = ['standard', 'deep', 'impact', 'deep impact']
+const VARIANTS_BASIC = ['standard', 'deep']
+
+// Variant options for a given socket category.
+export function variantsFor(category: string): string[] {
+  if (category === 'Torx Sockets' || category === 'Allen Sockets') return VARIANTS_BASIC
+  return VARIANTS_FULL
+}
 
 export const TOOL_GROUPS: ToolGroup[] = [
   { category: 'Ratchets & Drive Tools', tools: ['1/4" Ratchet', '3/8" Ratchet', '1/2" Ratchet', 'Breaker Bar', 'Torque Wrench', 'Extensions', 'Universal Joint / Wobble Adapter', 'Flex Head Ratchet', 'Stubby Ratchet'] },
@@ -71,7 +79,14 @@ export const GUIDE_FIELDS: Record<GuideSection, GuideField[]> = {
 }
 
 // A checked tool's optional sub-selections.
-export type ToolMeta = { drive?: string; variants?: string[] }
+//  - drive:    single drive size (Torque Wrench only)
+//  - variants: socket-level variants (used when no drive picker is shown)
+//  - drives:   per-drive variant sets (used when the drive picker is shown)
+export type ToolMeta = {
+  drive?: string
+  variants?: string[]
+  drives?: Record<string, string[]>
+}
 export type ChecklistValue = { selected?: string[]; meta?: Record<string, ToolMeta>; custom?: string }
 
 // Drive sizes available given which ratchets are checked (composite ids).
@@ -86,9 +101,23 @@ export function availableDrives(selected: string[]): string[] {
   return ALL_DRIVES.filter((d) => drives.includes(d))
 }
 
-// Count of selected sized OR generic ratchets (used to gate the per-socket drive picker).
+// Number of selected ratchets (gates the per-socket drive picker at >= 2).
 export function ratchetCount(selected: string[]): number {
   return selected.filter((s) => s.startsWith('Ratchets & Drive Tools::')).length
+}
+
+// Returns an error message if any checked drive has no variant, else null.
+export function validateChecklist(value: ChecklistValue | undefined): string | null {
+  const meta = value?.meta ?? {}
+  for (const id of Object.keys(meta)) {
+    const drives = meta[id].drives ?? {}
+    for (const d of Object.keys(drives)) {
+      if (!drives[d] || drives[d].length === 0) {
+        return 'Each selected drive size needs at least one variant.'
+      }
+    }
+  }
+  return null
 }
 
 export function composeGuideBody(section: GuideSection, values: Record<string, unknown>): string {
@@ -115,10 +144,16 @@ export function composeGuideBody(section: GuideSection, values: Record<string, u
         if (!inGroup.length) continue
         const rendered = inGroup.map((t) => {
           const m = meta[`${g.category}::${t}`]
-          const extras: string[] = []
-          if (m?.drive) extras.push(m.drive)
-          if (m?.variants && m.variants.length) extras.push(...m.variants)
-          return extras.length ? `${t} (${extras.join(', ')})` : t
+          if (!m) return t
+          const drives = m.drives ?? {}
+          const driveKeys = Object.keys(drives).filter((d) => (drives[d] ?? []).length > 0)
+          if (driveKeys.length) {
+            const parts = driveKeys.map((d) => `${d}: ${drives[d].join(', ')}`)
+            return `${t} (${parts.join('; ')})`
+          }
+          if (m.variants && m.variants.length) return `${t} (${m.variants.join(', ')})`
+          if (m.drive) return `${t} (${m.drive})`
+          return t
         })
         lines.push(`${g.category}: ${rendered.join(', ')}`)
       }
