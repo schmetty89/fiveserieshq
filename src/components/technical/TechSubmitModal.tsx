@@ -31,6 +31,7 @@ export function TechSubmitModal({ defaultGen, defaultSection, onClose }: Props) 
     body: '',
   })
   const [guide, setGuide] = useState<Record<string, string | number | { selected?: string[]; custom?: string }>>({})
+  const str = (k: string) => { const v = guide[k]; return typeof v === 'string' ? v : '' }
   const [file, setFile] = useState<File | null>(null)
   const [uploading, setUploading] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -321,7 +322,7 @@ export function TechSubmitModal({ defaultGen, defaultSection, onClose }: Props) 
                       </div>
                     ) : field.type === 'select' ? (
                       <select
-                        value={guide[field.key] ?? ''}
+                        value={str(field.key)}
                         onChange={(e) => setGuide((g) => ({ ...g, [field.key]: e.target.value }))}
                         className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-gray-900"
                       >
@@ -330,7 +331,7 @@ export function TechSubmitModal({ defaultGen, defaultSection, onClose }: Props) 
                       </select>
                     ) : field.type === 'textarea' ? (
                       <textarea
-                        value={guide[field.key] ?? ''}
+                        value={str(field.key)}
                         onChange={(e) => setGuide((g) => ({ ...g, [field.key]: e.target.value }))}
                         rows={field.list ? 3 : 5}
                         placeholder={field.placeholder}
@@ -339,7 +340,7 @@ export function TechSubmitModal({ defaultGen, defaultSection, onClose }: Props) 
                     ) : (
                       <input
                         type="text"
-                        value={guide[field.key] ?? ''}
+                        value={str(field.key)}
                         onChange={(e) => setGuide((g) => ({ ...g, [field.key]: e.target.value }))}
                         placeholder={field.placeholder}
                         className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-gray-900"
