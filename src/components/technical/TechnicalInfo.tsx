@@ -101,17 +101,18 @@ function TechnicalInfoInner() {
     setLoading(false)
   }, [activeArticleId])
 
+  // Reset selections only when generation or section changes
   useEffect(() => {
     setActiveSystem(null)
     setActiveArticleId(null)
     setArticle(null)
-    if (activeSection === 'documents') loadDocs()
-    else loadArticles()
-  }, [activeGen, activeSection, loadDocs, loadArticles])
+  }, [activeGen, activeSection])
 
+  // Load list data for the current generation / section / system
   useEffect(() => {
-    if (activeSystem !== null) loadArticles()
-  }, [activeSystem, loadArticles])
+    if (activeSection === 'documents') loadDocs()
+    else if (activeSection === 'maintenance' || activeSection === 'performance' || activeSection === 'diagnosis') loadArticles()
+  }, [activeGen, activeSection, activeSystem, loadDocs, loadArticles])
 
   useEffect(() => {
     if (activeArticleId) loadArticle()
@@ -155,7 +156,7 @@ function TechnicalInfoInner() {
           ) : article.file_url ? (
             <div className="border border-gray-200 rounded-xl p-8 text-center">
               <FileText size={28} className="text-gray-400 mx-auto mb-3" />
-              <p className="text-sm text-gray-600 mb-4">This article is a PDF document.</p>
+              <p className="text-sm text-gray-600 mb-4">This guide is a PDF document.</p>
               <a href={article.file_url} target="_blank" rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-gray-900 text-white text-sm font-medium hover:bg-gray-700 transition-colors">
                 <Download size={14} /> Download PDF
@@ -312,7 +313,7 @@ function TechnicalInfoInner() {
                   </div>
                   <p className="text-sm font-medium text-gray-800 group-hover:text-gray-900 mb-1">{sys.name}</p>
                   <p className="text-xs text-gray-400 mb-2 leading-snug">{sys.desc}</p>
-                  <p className="text-xs text-gray-400">{sysArticles.length > 0 ? `${sysArticles.length} article${sysArticles.length !== 1 ? 's' : ''}` : 'No articles yet'}</p>
+                  <p className="text-xs text-gray-400">{sysArticles.length > 0 ? `${sysArticles.length} guide${sysArticles.length !== 1 ? 's' : ''}` : 'No guides yet'}</p>
                 </button>
               )
             })}
@@ -341,7 +342,7 @@ function TechnicalInfoInner() {
 
             {loading ? <LoadingSkeleton /> : articles.length === 0 ? (
               <EmptyState
-                label="No articles yet for this system"
+                label="No guides yet for this system"
                 sub="Be the first to contribute a guide or document."
                 onSubmit={user && isTier2 ? () => setShowSubmitModal(true) : undefined}
               />

@@ -237,7 +237,7 @@ export function TechSubmitModal({ defaultGen, defaultSection, onClose }: Props) 
             {/* Title */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                {form.section === 'documents' ? 'Document name' : 'Article title'}
+                {form.section === 'documents' ? 'Document name' : 'Guide title'}
               </label>
               <input type="text" name="title" value={form.title} onChange={handleChange}
                 placeholder={form.section === 'documents' ? 'e.g. E39 Factory Service Manual' : 'e.g. M54 cooling system full overhaul'}
