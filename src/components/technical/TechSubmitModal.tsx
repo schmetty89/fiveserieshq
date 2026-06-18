@@ -30,7 +30,7 @@ export function TechSubmitModal({ defaultGen, defaultSection, onClose }: Props) 
     yearRange: '',
     body: '',
   })
-  const [guide, setGuide] = useState<Record<string, any>>({})
+  const [guide, setGuide] = useState<Record<string, string | number | { selected?: string[]; custom?: string }>>({})
   const [file, setFile] = useState<File | null>(null)
   const [uploading, setUploading] = useState(false)
   const [loading, setLoading] = useState(false)
