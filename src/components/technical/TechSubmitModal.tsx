@@ -7,6 +7,7 @@ import { MAINTENANCE_SYSTEMS, PERFORMANCE_SYSTEMS, DIAGNOSIS_SYSTEMS, DOC_CATEGO
 import { submitTechDocument, submitTechArticle } from '@/lib/technical-data'
 import { useAuth } from '@/components/auth/AuthProvider'
 import { createClient } from '@/lib/supabase'
+import { GUIDE_FIELDS, composeGuideBody, type GuideSection } from '@/lib/article-fields'
 
 interface Props {
   defaultGen?: string
@@ -29,6 +30,7 @@ export function TechSubmitModal({ defaultGen, defaultSection, onClose }: Props) 
     yearRange: '',
     body: '',
   })
+  const [guide, setGuide] = useState<Record<string, string>>({})
   const [file, setFile] = useState<File | null>(null)
   const [uploading, setUploading] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -99,7 +101,10 @@ export function TechSubmitModal({ defaultGen, defaultSection, onClose }: Props) 
         })
       } else {
         if (!form.system) { setError('Please select a system category.'); setLoading(false); return }
-        if (form.contentType === 'guide' && !form.body.trim()) { setError('Please write the guide content.'); setLoading(false); return }
+        if (form.contentType === 'guide') {
+          const composed = composeGuideBody(form.section as GuideSection, guide)
+          if (!composed) { setError('Please fill in at least one field.'); setLoading(false); return }
+        }
         if (form.contentType === 'pdf' && !file) { setError('Please upload a PDF file.'); setLoading(false); return }
         await submitTechArticle({
           title: form.title.trim(),
@@ -107,7 +112,7 @@ export function TechSubmitModal({ defaultGen, defaultSection, onClose }: Props) 
           section: form.section as 'maintenance' | 'performance' | 'diagnosis',
           system: form.system,
           contentType: form.contentType,
-          body: form.contentType === 'guide' ? form.body.trim() : undefined,
+          body: form.contentType === 'guide' ? composeGuideBody(form.section as GuideSection, guide) : undefined,
           fileUrl: fileUrl ?? undefined,
           authorId: user.id,
         })
@@ -170,7 +175,7 @@ export function TechSubmitModal({ defaultGen, defaultSection, onClose }: Props) 
                   { value: 'diagnosis',    label: '🔍 Fault diagnosis' },
                 ].map(s => (
                   <button key={s.value} type="button"
-                    onClick={() => setForm(f => ({ ...f, section: s.value, system: '' }))}
+                    onClick={() => { setForm(f => ({ ...f, section: s.value, system: '' })); setGuide({}) }}
                     className={`text-xs px-3 py-2 rounded-lg border transition-all ${
                       form.section === s.value ? 'bg-gray-900 text-white border-gray-900' : 'border-gray-200 text-gray-600 hover:border-gray-300'
                     }`}>
@@ -249,15 +254,41 @@ export function TechSubmitModal({ defaultGen, defaultSection, onClose }: Props) 
               </div>
             )}
 
-            {/* Guide body */}
+            {/* Guide body — structured fields per section */}
             {form.section !== 'documents' && form.contentType === 'guide' && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Guide content</label>
-                <textarea name="body" value={form.body} onChange={handleChange}
-                  rows={6}
-                  placeholder="Write your guide here. Include tools needed, part numbers, torque specs, and step-by-step instructions."
-                  className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2.5 resize-none focus:outline-none focus:ring-2 focus:ring-gray-900" />
-              </div>
+              <>
+                {(GUIDE_FIELDS[form.section as GuideSection] ?? []).map(field => (
+                  <div key={field.key}>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">{field.label}</label>
+                    {field.type === 'select' ? (
+                      <select
+                        value={guide[field.key] ?? ''}
+                        onChange={(e) => setGuide((g) => ({ ...g, [field.key]: e.target.value }))}
+                        className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-gray-900"
+                      >
+                        <option value="">Select…</option>
+                        {field.options?.map(o => <option key={o} value={o}>{o}</option>)}
+                      </select>
+                    ) : field.type === 'textarea' ? (
+                      <textarea
+                        value={guide[field.key] ?? ''}
+                        onChange={(e) => setGuide((g) => ({ ...g, [field.key]: e.target.value }))}
+                        rows={field.list ? 3 : 5}
+                        placeholder={field.placeholder}
+                        className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2.5 resize-none focus:outline-none focus:ring-2 focus:ring-gray-900"
+                      />
+                    ) : (
+                      <input
+                        type="text"
+                        value={guide[field.key] ?? ''}
+                        onChange={(e) => setGuide((g) => ({ ...g, [field.key]: e.target.value }))}
+                        placeholder={field.placeholder}
+                        className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-gray-900"
+                      />
+                    )}
+                  </div>
+                ))}
+              </>
             )}
 
             {/* File upload */}
