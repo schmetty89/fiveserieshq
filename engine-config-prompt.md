@@ -1,48 +1,17 @@
-export const MAINTENANCE_SYSTEMS = [
-  { id: 'powertrain',   name: 'Powertrain & drivetrain',          icon: '⚙️', desc: 'Engine, transmission, cooling, fueling, driveline' },
-  { id: 'suspension',   name: 'Suspension & brakes',              icon: '🔧', desc: 'Coilovers, springs, brakes, steering, alignment' },
-  { id: 'electrical',   name: 'Electrical systems',               icon: '⚡', desc: 'DME, coding, lighting, sensors, CAN bus' },
-  { id: 'body',         name: 'Body & interior',                  icon: '🪟', desc: 'Trim, seals, glass, paint, HVAC' },
-  { id: 'fuel',         name: 'Fuel & exhaust',                   icon: '🔥', desc: 'Injectors, filters, exhaust, emissions' },
-  { id: 'transmission', name: 'Transmission & driveline',         icon: '🔩', desc: 'Gearbox, diff, driveshaft, clutch' },
-] as const
+# FiveSeriesHQ — add ENGINES_BY_GENERATION config
 
-export const PERFORMANCE_SYSTEMS = [
-  { id: 'engine-perf',     name: 'Engine performance',       icon: '🚀', desc: 'Tunes, intakes, intercoolers, turbos' },
-  { id: 'suspension-perf', name: 'Suspension & handling',    icon: '🏁', desc: 'Coilovers, sway bars, bushings, alignment' },
-  { id: 'brakes-perf',     name: 'Brake upgrades',           icon: '🛑', desc: 'Big brake kits, pads, fluid, lines' },
-  { id: 'exhaust-perf',    name: 'Exhaust & intake',         icon: '💨', desc: 'Downpipes, catbacks, OPF deletes, intakes' },
-  { id: 'trans-perf',      name: 'Transmission & diff',      icon: '⚙️', desc: 'Short shifters, LSD, clutch kits' },
-  { id: 'ecu',             name: 'ECU & coding',             icon: '💻', desc: 'Flash tunes, BimmerCode, DME unlocks' },
-] as const
+Read `CLAUDE.md` first. **Do NOT touch the database, do NOT change section values / table
+names / function names, do NOT commit or push.** This is a config-file addition only.
+This session has no git push auth — make the edit and stop. The user commits/pushes via
+GitHub Desktop. Do NOT run `npm run build` (the "My Drive" path breaks it).
 
-export const DIAGNOSIS_SYSTEMS = [
-  { id: 'dme',              name: 'DME / ECU',          icon: '💻', desc: 'DME faults, flash counters, ECU hardware issues' },
-  { id: 'coding',           name: 'BMW Coding',         icon: '🔌', desc: 'BimmerCode, E-sys, NCS Expert, ISTA coding procedures' },
-  { id: 'fault-codes',      name: 'Fault codes',        icon: '⚠️', desc: 'DTC references, code meanings, and clearing procedures' },
-  { id: 'mechanical-faults',name: 'Mechanical faults',  icon: '🔩', desc: 'Common failure points, diagnosis guides, known issues' },
-] as const
+## Change — add an engine-code mapping to `src/lib/technical-config.ts`
 
-export const APPS_SYSTEMS = [
-  { id: 'fitment', name: 'Rim Fitment Guide', icon: '🔧', desc: 'Interactive wheel and tire fitment tool for all 5 Series generations', link: '/technical/fitment' },
-] as const
+Append the following to the END of `src/lib/technical-config.ts` (do not modify any
+existing exports in the file). This is static US-market reference data: engines grouped by
+model within each generation, each entry carrying short code, full code, model, and years.
 
-export const DOC_CATEGORIES = [
-  'Service manual',
-  'Wiring diagram',
-  'Engine manual',
-  'Transmission manual',
-  'Chassis manual',
-  'Systems manual',
-  'Body manual',
-  'Other',
-] as const
-
-export type MaintenanceSystem = typeof MAINTENANCE_SYSTEMS[number]['id']
-export type PerformanceSystem = typeof PERFORMANCE_SYSTEMS[number]['id']
-export type DiagnosisSystem = typeof DIAGNOSIS_SYSTEMS[number]['id']
-export type AppsSystem = typeof APPS_SYSTEMS[number]['id']
-export type TechSection = 'documents' | 'maintenance' | 'performance' | 'apps' | 'diagnosis'
+```typescript
 
 // ─────────────────────────────────────────────────────────────
 // Engine codes by generation (US-market gas engines, incl. M-cars)
@@ -97,3 +66,8 @@ export const ENGINES_BY_GENERATION: Record<string, EngineEntry[]> = {
 // All engines across every generation, for cross-generation use
 // (e.g. swap/retrofit guides in the future Mods & Retrofits section).
 export const ALL_ENGINES: EngineEntry[] = Object.values(ENGINES_BY_GENERATION).flat()
+```
+
+## When done
+Make the edit and STOP. Do not commit, push, or run the build. Report what you changed.
+Note: this only ADDS exports; it must not alter anything already in the file.
