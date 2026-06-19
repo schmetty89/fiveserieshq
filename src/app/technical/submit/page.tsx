@@ -1,52 +1,34 @@
-// app/technical/submit/page.tsx
-// Route that mounts the technical article submission form.
-// The form itself handles auth + Tier 2 gating, so this page can stay thin.
-//
-// ADJUST:
-//  - import path for ArticleSubmitForm to match where you placed it
-//  - wrapper classes / layout to match your Technical section pages
-//  - (optional) add a server-side login redirect — see note at bottom
+'use client'
 
-import type { Metadata } from "next";
-import ArticleSubmitForm from "@/components/technical/ArticleSubmitForm";
+import { Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
+import Link from 'next/link'
+import { ArrowLeft } from 'lucide-react'
+import { TechSubmitForm } from '@/components/technical/TechSubmitForm'
 
-export const metadata: Metadata = {
-  title: "Submit a Technical Article | FiveSeriesHQ",
-  description:
-    "Share a maintenance guide, fault diagnosis, or modification writeup with the BMW 5 Series community.",
-};
+function SubmitPageInner() {
+  const searchParams = useSearchParams()
+  const gen = searchParams.get('gen') ?? undefined
+  const section = searchParams.get('section') ?? undefined
+  const backHref = `/technical?gen=${gen ?? 'E39'}&section=${section ?? 'maintenance'}`
 
-export default function SubmitArticlePage() {
   return (
-    <main className="mx-auto max-w-3xl px-4 py-10">
-      <header className="mb-8">
-        <p className="text-xs font-medium uppercase tracking-wide text-neutral-500">
-          Technical
-        </p>
-        <h1 className="mt-1 text-2xl font-semibold text-neutral-100">
-          Submit a technical article
-        </h1>
-        <p className="mt-2 text-sm text-neutral-400">
-          Maintenance guides, fault diagnosis, and modifications &amp; retrofits.
-          Every submission is reviewed by an admin before it goes live.
-        </p>
-      </header>
-
-      <ArticleSubmitForm />
-    </main>
-  );
+    <div className="max-w-3xl mx-auto px-4 py-8">
+      <Link href={backHref}
+        className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 mb-6 transition-colors">
+        <ArrowLeft size={14} /> Back to technical library
+      </Link>
+      <h1 className="text-2xl font-medium text-gray-900 mb-1">Submit technical content</h1>
+      <p className="text-sm text-gray-500 mb-8">Contribute a guide, document, or reference for the community.</p>
+      <TechSubmitForm defaultGen={gen} defaultSection={section} backHref={backHref} />
+    </div>
+  )
 }
 
-// Optional hard gate (recommended): redirect logged-out users before render.
-// Requires your server-side Supabase helper. Example:
-//
-//   import { redirect } from "next/navigation";
-//   import { createClient } from "@/lib/supabase/server";
-//
-//   const supabase = await createClient();
-//   const { data: { user } } = await supabase.auth.getUser();
-//   if (!user) redirect("/login?next=/technical/submit");
-//
-// The form already shows a friendly login/Tier-2 message without this, so it's
-// purely a UX nicety.
-
+export default function SubmitPage() {
+  return (
+    <Suspense fallback={<div className="h-96 bg-gray-50 animate-pulse rounded-xl max-w-3xl mx-auto my-8" />}>
+      <SubmitPageInner />
+    </Suspense>
+  )
+}
