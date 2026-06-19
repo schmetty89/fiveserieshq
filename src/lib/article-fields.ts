@@ -55,15 +55,16 @@ export const GUIDE_FIELDS: Record<GuideSection, GuideField[]> = {
   maintenance: [
     { key: 'difficulty', label: 'Difficulty', type: 'wrench' },
     { key: 'tools', label: 'Tools needed', type: 'checklist', groups: TOOL_GROUPS, allowCustom: true },
+    { key: 'coding', label: 'Coding / programming', type: 'text', placeholder: 'e.g. Bimmercode — enable folding mirrors' },
     { key: 'parts', label: 'Parts & part numbers', type: 'textarea', list: true, placeholder: 'One per line, e.g. Oil filter — 11427566327' },
     { key: 'procedure', label: 'Procedure', type: 'textarea', placeholder: 'Step-by-step instructions' },
     { key: 'tips', label: 'Tips & notes', type: 'textarea', placeholder: 'Optional' },
   ],
   performance: [
-    { key: 'parts', label: 'Parts required', type: 'textarea', list: true, placeholder: 'One per line' },
+    { key: 'difficulty', label: 'Difficulty', type: 'wrench' },
     { key: 'tools', label: 'Tools needed', type: 'checklist', groups: TOOL_GROUPS, allowCustom: true },
     { key: 'coding', label: 'Coding / programming', type: 'text', placeholder: 'e.g. Bimmercode — enable folding mirrors' },
-    { key: 'difficulty', label: 'Difficulty', type: 'wrench' },
+    { key: 'parts', label: 'Parts required', type: 'textarea', list: true, placeholder: 'One per line' },
     { key: 'cost', label: 'Estimated cost', type: 'text', placeholder: 'e.g. $1,200' },
     { key: 'procedure', label: 'Procedure', type: 'textarea', placeholder: 'Step-by-step instructions' },
     { key: 'notes', label: 'Notes & warnings', type: 'textarea', placeholder: 'Optional — warranty, emissions, reversibility' },

@@ -10,7 +10,6 @@ import { MAINTENANCE_SYSTEMS, PERFORMANCE_SYSTEMS, DIAGNOSIS_SYSTEMS, APPS_SYSTE
 import { getTechDocuments, getTechArticles, getTechArticle } from '@/lib/technical-data'
 import { formatRelativeTime } from '@/lib/utils'
 import { useAuth } from '@/components/auth/AuthProvider'
-import { TechSubmitModal } from './TechSubmitModal'
 
 interface TechDoc {
   id: string
@@ -70,9 +69,8 @@ function TechnicalInfoInner() {
   const [articles, setArticles] = useState<TechArticle[]>([])
   const [article, setArticle] = useState<ArticleDetail | null>(null)
   const [loading, setLoading] = useState(false)
-  const [showSubmitModal, setShowSubmitModal] = useState(false)
-
   const genColors = GEN_COLORS[activeGen]
+  const submitHref = `/technical/submit?gen=${activeGen}&section=${activeSection}`
 
   const loadDocs = useCallback(async () => {
     setLoading(true)
@@ -128,7 +126,7 @@ function TechnicalInfoInner() {
       <div className="grid grid-cols-1 lg:grid-cols-[240px_1fr] gap-8">
         <GenSidebar activeGen={activeGen} setActiveGen={g => { setActiveGen(g); setActiveArticleId(null) }}
           activeSection={activeSection} setActiveSection={s => { setActiveSection(s); setActiveArticleId(null) }}
-          onSubmit={() => setShowSubmitModal(true)} user={!!user} />
+          onSubmit={submitHref} user={!!user} />
         <div>
           <button onClick={() => setActiveArticleId(null)}
             className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 mb-5 transition-colors">
@@ -166,7 +164,6 @@ function TechnicalInfoInner() {
             <p className="text-sm text-gray-400">Content not available.</p>
           )}
         </div>
-        {showSubmitModal && <TechSubmitModal defaultGen={activeGen} defaultSection={activeSection} onClose={() => setShowSubmitModal(false)} />}
       </div>
     )
   }
@@ -175,7 +172,7 @@ function TechnicalInfoInner() {
     <div className="grid grid-cols-1 lg:grid-cols-[240px_1fr] gap-8">
       <GenSidebar activeGen={activeGen} setActiveGen={g => { setActiveGen(g); setActiveSystem(null) }}
         activeSection={activeSection} setActiveSection={s => { setActiveSection(s); setActiveSystem(null) }}
-        onSubmit={() => setShowSubmitModal(true)} user={!!user} />
+        onSubmit={submitHref} user={!!user} />
 
       <div>
         {/* Header */}
@@ -204,10 +201,10 @@ function TechnicalInfoInner() {
             </p>
           </div>
           {user && activeSection !== 'apps' && (
-            <button onClick={() => setShowSubmitModal(true)}
+            <Link href={submitHref}
               className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-gray-900 text-white text-sm font-medium hover:bg-gray-700 transition-colors flex-shrink-0">
               <Upload size={13} /> Submit
-            </button>
+            </Link>
           )}
         </div>
 
@@ -233,7 +230,7 @@ function TechnicalInfoInner() {
         {/* ── Documents section ── */}
         {activeSection === 'documents' && (
           loading ? <LoadingSkeleton /> : docs.length === 0 ? (
-            <EmptyState label="No documents yet" sub="Be the first to submit a factory manual or wiring diagram." onSubmit={user && isTier2 ? () => setShowSubmitModal(true) : undefined} />
+            <EmptyState label="No documents yet" sub="Be the first to submit a factory manual or wiring diagram." onSubmit={user && isTier2 ? submitHref : undefined} />
           ) : (
             <div className="space-y-6">
               {docCategories.map(cat => (
@@ -344,7 +341,7 @@ function TechnicalInfoInner() {
               <EmptyState
                 label="No guides yet for this system"
                 sub="Be the first to contribute a guide or document."
-                onSubmit={user && isTier2 ? () => setShowSubmitModal(true) : undefined}
+                onSubmit={user && isTier2 ? submitHref : undefined}
               />
             ) : (
               <div className="divide-y divide-gray-100">
@@ -386,13 +383,6 @@ function TechnicalInfoInner() {
         )}
       </div>
 
-      {showSubmitModal && (
-        <TechSubmitModal
-          defaultGen={activeGen}
-          defaultSection={activeSection}
-          onClose={() => setShowSubmitModal(false)}
-        />
-      )}
     </div>
   )
 }
@@ -410,7 +400,7 @@ function GenSidebar({ activeGen, setActiveGen, activeSection, setActiveSection, 
   setActiveGen: (g: Generation) => void
   activeSection: TechSection
   setActiveSection: (s: TechSection) => void
-  onSubmit: () => void
+  onSubmit: string
   user: boolean
 }) {
   return (
@@ -461,10 +451,10 @@ function GenSidebar({ activeGen, setActiveGen, activeSection, setActiveSection, 
 
       {user && (
         <div className="pt-2">
-          <button onClick={onSubmit}
+          <Link href={onSubmit}
             className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition-colors border border-dashed border-gray-200">
             <Upload size={13} /> Submit content
-          </button>
+          </Link>
         </div>
       )}
     </aside>
@@ -479,17 +469,17 @@ function LoadingSkeleton() {
   )
 }
 
-function EmptyState({ label, sub, onSubmit }: { label: string; sub: string; onSubmit?: () => void }) {
+function EmptyState({ label, sub, onSubmit }: { label: string; sub: string; onSubmit?: string }) {
   return (
     <div className="text-center py-14 border border-dashed border-gray-200 rounded-xl">
       <FileText size={24} className="text-gray-300 mx-auto mb-3" />
       <p className="text-sm font-medium text-gray-500 mb-1">{label}</p>
       <p className="text-xs text-gray-400 mb-4 max-w-xs mx-auto">{sub}</p>
       {onSubmit && (
-        <button onClick={onSubmit}
+        <Link href={onSubmit}
           className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-900 text-white text-sm font-medium hover:bg-gray-700 transition-colors">
           <Upload size={13} /> Submit content
-        </button>
+        </Link>
       )}
     </div>
   )
