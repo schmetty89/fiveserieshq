@@ -147,7 +147,7 @@ export function TechSubmitForm({ defaultGen, defaultSection, backHref = '/techni
 
   if (submitted) {
     return (
-      <div className="max-w-lg mx-auto py-12 text-center">
+      <div className="py-12 text-center">
         <div className="w-14 h-14 rounded-full bg-green-50 flex items-center justify-center mx-auto mb-4">
           <CheckCircle size={28} className="text-green-600" />
         </div>
@@ -170,7 +170,7 @@ export function TechSubmitForm({ defaultGen, defaultSection, backHref = '/techni
   }
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-lg mx-auto space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4">
       <p className="text-sm text-gray-500 leading-relaxed">
         Submissions are reviewed before going live. Verified content gets a badge.
       </p>
