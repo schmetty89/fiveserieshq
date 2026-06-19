@@ -129,7 +129,7 @@ export function BuildSubmitForm({ buildId }: Props) {
           .select('id')
           .single()
         if (error || !data) throw error ?? new Error('No data returned')
-        router.replace(`/showcase/submit?id=${data.id}`)
+        router.replace(`/builds/submit?id=${data.id}`)
       } else {
         const { error } = await supabase
           .from('builds')
