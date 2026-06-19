@@ -4,7 +4,7 @@ import { useState, useRef } from 'react'
 import { Loader2, AlertCircle, CheckCircle, Upload, FileText, Wrench } from 'lucide-react'
 import Link from 'next/link'
 import { GENERATIONS } from '@/types'
-import { MAINTENANCE_SYSTEMS, PERFORMANCE_SYSTEMS, DIAGNOSIS_SYSTEMS, DOC_CATEGORIES } from '@/lib/technical-config'
+import { MAINTENANCE_SYSTEMS, PERFORMANCE_SYSTEMS, DIAGNOSIS_SYSTEMS, DOC_CATEGORIES, ENGINES_BY_GENERATION } from '@/lib/technical-config'
 import { submitTechDocument, submitTechArticle } from '@/lib/technical-data'
 import { useAuth } from '@/components/auth/AuthProvider'
 import { createClient } from '@/lib/supabase'
@@ -25,6 +25,7 @@ export function TechSubmitForm({ defaultGen, defaultSection, backHref = '/techni
     section: defaultSection || 'maintenance',
     contentType: 'guide' as 'guide' | 'pdf',
     generation: defaultGen || '',
+    engine: '',
     system: '',
     docCategory: '',
     title: '',
@@ -60,6 +61,7 @@ export function TechSubmitForm({ defaultGen, defaultSection, backHref = '/techni
       section: defaultSection || 'maintenance',
       contentType: 'guide',
       generation: defaultGen || '',
+      engine: '',
       system: '',
       docCategory: '',
       title: '',
@@ -73,6 +75,7 @@ export function TechSubmitForm({ defaultGen, defaultSection, backHref = '/techni
   }
 
   const systems = form.section === 'diagnosis' ? DIAGNOSIS_SYSTEMS : form.section === 'performance' ? PERFORMANCE_SYSTEMS : MAINTENANCE_SYSTEMS
+  const engineOptions = form.generation ? (ENGINES_BY_GENERATION[form.generation] ?? []) : []
 
   async function uploadFile(): Promise<string | null> {
     if (!file || !user) return null
@@ -123,6 +126,7 @@ export function TechSubmitForm({ defaultGen, defaultSection, backHref = '/techni
           const checklistError = validateChecklist(guide['tools'] as ChecklistValue | undefined)
           if (checklistError) { setError(checklistError); setLoading(false); return }
         }
+        const engineLine = form.engine ? `Engine: ${form.engine}\n\n` : ''
         if (form.contentType === 'pdf' && !file) { setError('Please upload a PDF file.'); setLoading(false); return }
         await submitTechArticle({
           title: form.title.trim(),
@@ -130,7 +134,7 @@ export function TechSubmitForm({ defaultGen, defaultSection, backHref = '/techni
           section: form.section as 'maintenance' | 'performance' | 'diagnosis',
           system: form.system,
           contentType: form.contentType,
-          body: form.contentType === 'guide' ? composeGuideBody(form.section as GuideSection, guide) : undefined,
+          body: form.contentType === 'guide' ? engineLine + composeGuideBody(form.section as GuideSection, guide) : undefined,
           fileUrl: fileUrl ?? undefined,
           authorId: user.id,
         })
@@ -251,6 +255,28 @@ export function TechSubmitForm({ defaultGen, defaultSection, backHref = '/techni
           </div>
         )}
       </div>
+
+            {/* Engine (optional) */}
+            {form.section !== 'documents' && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                  Engine <span className="text-gray-400 font-normal">(optional)</span>
+                </label>
+                <select
+                  value={form.engine}
+                  onChange={(e) => setForm(f => ({ ...f, engine: e.target.value }))}
+                  disabled={!form.generation}
+                  className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-gray-900 disabled:bg-gray-50 disabled:text-gray-400"
+                >
+                  <option value="">{form.generation ? 'Select engine (optional)' : 'Select a generation first'}</option>
+                  {engineOptions.map((eng) => (
+                    <option key={`${eng.model}-${eng.full}`} value={eng.full}>
+                      {eng.model} — {eng.full} ({eng.years})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
 
       {/* Title */}
       <div>
