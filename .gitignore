@@ -32,4 +32,4 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-form-to-page-prompt.md
+*-prompt.md
