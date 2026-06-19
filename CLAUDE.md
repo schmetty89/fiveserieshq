@@ -1,324 +1,190 @@
-# FiveSeriesHQ — Project Context for Claude Code
+# CLAUDE.md — FiveSeriesHQ Project Handover
 
-## Overview
-FiveSeriesHQ is a community platform for BMW 5 Series enthusiasts at **fiveserieshq.com**. It covers every generation from E34 to G30 and includes forums, technical library, video library, vendor directory, events calendar, member profiles with garage, build showcase, and an admin dashboard.
+## What this is
+FiveSeriesHQ (fiveserieshq.com) — a BMW 5 Series community site. Next.js 15.3.6 / TypeScript /
+Tailwind / Supabase / Vercel. GitHub repo `schmetty89/fiveserieshq`.
 
----
+## Working environment & workflow (IMPORTANT)
+- Repo lives on Windows at `G:/My Drive/Fiveserieshq/fiveserieshq` (Git Bash path
+  `/g/My Drive/Fiveserieshq/fiveserieshq`).
+- The space in "My Drive" BREAKS local `npm run build` and `npm install` (tar write errors via
+  Google Drive sync). **Do NOT run `npm run build` locally.** The build gate is the Vercel
+  preview + GitHub Actions CI, NOT local builds.
+- If you ever need to regenerate `package-lock.json`, do it OUTSIDE the Drive folder:
+  `cp package.json /tmp/x/ && cd /tmp/x && npm install --package-lock-only`, then copy the lock
+  file back. (This is how the committed lockfile was created.)
+- **Edit/commit workflow:** Assistant writes a `.md` prompt file → user drops it in repo root →
+  tells Claude Code "Read X.md in the repo root and carry it out" → Claude Code edits files only
+  (NO commit/push — that session has no git push auth) → user commits/pushes via GitHub Desktop
+  with an assistant-provided commit summary → tests on Vercel preview → merges via PR.
+- **Prompt files are gitignored** via the pattern `*-prompt.md` in `.gitignore`, so they never get
+  committed. Name every Claude Code prompt file `something-prompt.md`.
+- **Branch protection is ON** for `main` (GitHub ruleset, enforced because the repo is PUBLIC):
+  requires a PR + the `check` CI status to pass before merge. So: feature branch → PR → green CI →
+  merge. Required approvals = 0 (solo dev). Future: badge-based moderator system may change this.
+- **CI:** `.github/workflows/ci.yml` runs `npm ci` + `npm run lint` + `npm run typecheck` on
+  ubuntu on every PR to main and every push to non-main branches. `typecheck` script =
+  `tsc --noEmit`. Lint = `next lint`. This is the real error gate (catches what the broken local
+  build can't).
+- Vercel quirk: sometimes a push doesn't trigger a deploy. Fixes: in GitHub Desktop ensure you
+  actually **published/pushed** the branch (commit ≠ push); or empty-commit kick:
+  `git commit --allow-empty -m "trigger" && git push`.
+- Common branch gotcha: new feature branches cut from an older `main` will be MISSING recently
+  merged work. Symptom: "module has no exported member X" or "file doesn't exist". Fix:
+  `git checkout main && git pull && git checkout <branch> && git merge main`. (Hit this twice this
+  session — for TechSubmitForm and ENGINES_BY_GENERATION.)
 
-## Tech Stack
-- **Framework:** Next.js 15.3.6 (App Router)
-- **Language:** TypeScript (strict — no `any` types, no unused vars)
-- **Styling:** Tailwind CSS
-- **Database & Auth:** Supabase (project ID: `xgfvrlrbeymronphmpii`)
-- **Hosting:** Vercel (auto-deploys from GitHub `main` branch)
-- **Repo:** GitHub — fiveserieshq
-- **Domain:** fiveserieshq.com (DNS via GoDaddy pointing to Vercel)
+## Admin / accounts
+- Admin user id: `a8c167c6-4f0e-4ba3-8485-9be951da2141`.
+- Supabase project: `fiveserieshq`, project_id `xgfvrlrbeymronphmpii`, region us-west-2, Postgres 17.
+- Supabase plan: FREE (so no dev branches — branching needs paid; migrations applied
+  production-direct after careful review).
+- `profiles` table columns: id (uuid), username, avatar_url, bio, location, member_number,
+  post_count, build_count (int — intended for showcase, increment on verify later), video_count,
+  created_at, role (text: 'member'|'moderator'|'admin'), tier (int, 1/2).
 
----
-
-## Environment Variables (set in Vercel)
-```
-NEXT_PUBLIC_SUPABASE_URL=https://xgfvrlrbeymronphmpii.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=...
-SUPABASE_SERVICE_ROLE_KEY=...
-NEXT_PUBLIC_SITE_URL=https://fiveserieshq.com
-NEXT_PUBLIC_SITE_NAME=FiveSeriesHQ
-```
-
----
-
-## Project Structure
-```
-src/
-  app/                          # Next.js App Router pages
-    page.tsx                    # Homepage with hero
-    layout.tsx                  # Root layout with AuthProvider, full SEO metadata
-    sitemap.ts                  # Auto-generated sitemap
-    robots.ts                   # robots.txt
-    about/page.tsx              # About page
-    auth/
-      join/page.tsx             # Sign up
-      login/page.tsx + LoginForm.tsx
-      verify/page.tsx
-      reset-password/page.tsx
-      callback/route.ts         # Supabase auth callback
-    forums/
-      page.tsx                  # Forum index
-      subforum/page.tsx         # Thread list (accepts ?gen, ?cat, ?region, ?engine)
-      thread/[id]/page.tsx      # Individual thread
-      new/page.tsx              # New thread composer
-    videos/page.tsx
-    vendors/page.tsx
-    technical/page.tsx          # Gen/section persisted in URL (?gen=F10&section=documents)
-    events/page.tsx
-    builds/page.tsx             # Under construction placeholder
-    members/
-      me/page.tsx               # Logged-in user profile
-      [username]/page.tsx       # Public profile
-    admin/
-      page.tsx                  # Admin overview
-      vendors/page.tsx
-      videos/page.tsx
-      technical/page.tsx
-      forums/page.tsx
-      members/page.tsx          # Tier 2 approvals + role management
-    terms/page.tsx
-    api/og/route.ts             # OG image redirect to Supabase
-
-  components/
-    layout/
-      Navbar.tsx                # Sticky dark navbar with auth state, M stripe SVG logo
-      Footer.tsx
-    hero/
-      HeroSection.tsx           # Homepage hero — per-gen M5 images, Nürburgring bg
-    auth/
-      AuthProvider.tsx          # Context: user, profile, isTier2, isAdmin, isModerator
-    forums/
-      ForumIndex.tsx            # Forum landing — gen subforums + regional
-      SubforumView.tsx          # Thread list with tier/engine support
-      ThreadView.tsx            # Full thread + reply composer
-      NewThreadForm.tsx         # Thread composer with gen/cat/engine/region
-    videos/
-      VideoLibrary.tsx          # Netflix-style rows by category
-      SubmitVideoModal.tsx
-    vendors/
-      VendorDirectory.tsx
-      VendorApplyModal.tsx
-      VendorReviewModal.tsx
-    technical/
-      TechnicalInfo.tsx         # Gen sidebar, docs/maintenance/performance sections
-      TechSubmitModal.tsx       # File upload to Supabase storage (tech-documents bucket)
-    events/
-      EventsCalendar.tsx
-      SubmitEventModal.tsx
-    members/
-      MyProfile.tsx             # Logged-in user profile with tier badge
-      PublicProfile.tsx
-      GarageTab.tsx
-      CarModal.tsx
-      TierBadge.tsx             # BMW Roundel (T1) or M stripe (T2) SVG badge
-    admin/
-      AdminLayout.tsx           # Sidebar nav with pending count badges, auth guard
-      ReviewCard.tsx            # Approve/reject card with expandable details
-
-  lib/
-    supabase.ts                 # Browser client only
-    supabase-server.ts          # Server client only
-    forum-config.ts             # Gen colors, subforum cats, engine lineups, regional subforums
-    forum-data.ts               # Forum Supabase queries
-    member-data.ts              # Profile/garage Supabase queries
-    vendor-data.ts
-    video-data.ts
-    video-config.ts
-    technical-data.ts
-    technical-config.ts
-    event-data.ts
-    admin-data.ts               # Admin queries incl. tier management
-    seo.ts                      # generatePageMetadata helper
-    utils.ts                    # cn(), formatRelativeTime(), extractYouTubeId(), getYouTubeThumbnail()
-
-  middleware.ts                 # Route protection — admin and member-only routes
-  types/index.ts                # Generation, GENERATIONS, GENERATION_YEARS, GENERATION_TAGLINE
-  styles/globals.css
-```
+## Supabase storage buckets (all public)
+`article-images`, `hero-images`, `tech-documents`, `build-media` (new — for showcase).
 
 ---
 
-## Database Schema (Supabase)
+## FEATURE: Technical guides (DONE, live)
+- Sections in `tech_articles.section`: EXACTLY `maintenance` | `performance` | `diagnosis`.
+  "Technical documents" is a separate `tech_documents` table. "Apps" is static.
+- Submit form: `src/components/technical/TechSubmitForm.tsx` (extracted from the old
+  `TechSubmitModal.tsx`, which still exists on disk but is UNUSED). Lives at its own page
+  `src/app/technical/submit/page.tsx` (route `/technical/submit?gen=&section=`).
+  `TechnicalInfo.tsx` "Submit" buttons link to it.
+- Structured guide fields: `src/lib/article-fields.ts` — `GUIDE_FIELDS` per section,
+  `composeGuideBody()` composes fields into the plain-text `body`. Field types: text / textarea /
+  select / wrench (1–5 🔧 difficulty) / checklist (grouped tool checklist).
+- Tool checklist supports multi-drive sockets w/ per-drive variants. Socket categories:
+  Metric, E-Torx, Torx, Allen Sockets. Drive picker shows when 2+ ratchets selected; Torque Wrench
+  has its own drive picker. Variant profiles: Metric/E-Torx = standard/deep/impact/deep impact;
+  Torx/Allen = standard/deep. `validateChecklist()` blocks a drive with no variant.
+- Maintenance & performance field order matched: Difficulty, Tools, Coding, Parts, (Cost),
+  Procedure, (Notes/Tips). Coding field exists on both.
+- Engine config: `ENGINES_BY_GENERATION` + `ALL_ENGINES` + `EngineEntry` type + `variantsFor()`
+  live in `src/lib/technical-config.ts`. US-market gas engines + M-cars, verified by user.
+  Engine field on guide form is OPTIONAL, top of form, reads `ENGINES_BY_GENERATION[gen]`,
+  composes an "Engine: <fullcode>" line into body.
 
-### profiles
-- `id` uuid (FK → auth.users)
-- `username` text unique
-- `avatar_url`, `bio`, `location` text nullable
-- `member_number` int auto-increment unique
-- `post_count`, `build_count`, `video_count` int default 0
-- `role` text default 'member' — CHECK: member | moderator | admin
-- `tier` int default 1 — CHECK: 1 | 2
-- `created_at` timestamptz
+### Verified engine mapping (US-market gas + M, by generation → model → engine)
+- E39: 525i M54B25(01-03); 528i M52B28(95-98)+M52TUB28(98-01); 530i M54B30(01-03);
+  540i M62B44(97-98)+M62TUB44(99-03); M5 S62B50(00-03). (NO 535i — Euro only.)
+- E60: 525i M54B25(04)+N52B30(05-07); 528i N52B30(08-10); 530i M54B30(04-05)+N52B30(06-07);
+  535i N54B30(08-10); 545i N62B44(04-05); 550i N62B48(06-10); M5 S85B50(06-10).
+  (NO N53 — Euro only; US stayed N52.)
+- F10: 528i N52B30(11)+N20B20(12-16); 535i N55B30; 550i N63B44; M5 S63B44(13-16).
+- G30: 530i B48B20; 540i B58B30; 550i N63B44(17-19); M5 S63B44 (F90).
 
-### forum_threads
-- `id` uuid
-- `title`, `body` text
-- `author_id` uuid FK → profiles
-- `generation` text nullable — CHECK: E34|E39|E60|F10|G30
-- `category` text — engine|drivetrain|suspension|electrical|general|marketplace
-- `engine` text nullable — engine code e.g. 'm54b30'
-- `regional_subforum` text nullable
-- `is_pinned`, `is_solved` bool default false
-- `reply_count`, `view_count` int default 0
-- `last_reply_at`, `created_at` timestamptz
-
-### forum_posts
-- `id` uuid
-- `thread_id` uuid FK → forum_threads
-- `author_id` uuid FK → profiles
-- `body` text
-- `image_urls` text[] nullable
-- `youtube_url` text nullable
-- `is_op` bool default false
-- `created_at` timestamptz
-
-### garage_cars
-- `id` uuid
-- `user_id` uuid FK → profiles
-- `year` int, `model` text, `generation` text, `body_style` text
-- `color_name`, `color_code`, `mileage`, `vin_last5` text nullable
-- `is_primary` bool default false
-- `build_id` uuid nullable
-
-### vendors
-- `id` uuid
-- `name`, `type`, `description`, `location` text
-- `website_url`, `instagram`, `contact_email` text nullable
-- `generations` text[]
-- `years_in_business` int nullable
-- `approved`, `rejected` bool default false
-- `rejection_reason` text nullable
-- `average_rating` numeric default 0
-- `review_count` int default 0
-
-### vendor_reviews
-- `id` uuid
-- `vendor_id` uuid FK → vendors
-- `author_id` uuid FK → profiles
-- `rating` int CHECK 1-5
-- `body` text
-
-### videos
-- `id` uuid
-- `youtube_id`, `title`, `channel_name` text
-- `category` text CHECK: diy|build-progress|reviews|track-performance
-- `generation` text CHECK: E34|E39|E60|F10|G30
-- `duration` text nullable
-- `submitted_by` uuid FK → profiles
-- `approved`, `rejected` bool default false
-- `rejection_reason` text nullable
-- `like_count` int default 0
-
-### tech_documents
-- `id` uuid
-- `name`, `generation`, `category` text
-- `file_url` text — real URL from Supabase storage (tech-documents bucket)
-- `file_size_mb` numeric nullable
-- `year_range` text nullable
-- `verified`, `rejected` bool default false
-- `rejection_reason` text nullable
-- `submitted_by` uuid FK → profiles
-
-### tech_articles
-- `id` uuid
-- `title`, `generation`, `section`, `system`, `content_type` text
-- `body` text nullable (for guide type)
-- `file_url` text nullable (for pdf type)
-- `author_id` uuid FK → profiles
-- `verified`, `rejected` bool default false
-- `rejection_reason` text nullable
-- `view_count` int default 0
-
-### events
-- `id` uuid
-- `name`, `description`, `type`, `location` text
-- `event_date` date
-- `region` text nullable
-- `organizer_id` uuid FK → profiles
-- `attendee_count` int default 0
+## FEATURE: Parts pricing (DESIGNED, not built — parked)
+- Decision history: no clean public BMW parts/pricing API exists. RealOEM is scrape-only +
+  unreliable prices. Retailer auto-search = scraping (ToS + bot-blocking) = NO-GO.
+- AGREED v1 design (not yet built): author types generic part name → form shows buttons that OPEN
+  FCP Euro + Turner search in a new tab (pre-filled w/ part name + engine context) → author finds
+  the part, pastes back part number / product URL → article shows part number + multi-retailer
+  links (generated from the part number via each retailer's search URL — the forum-proven trick).
+  Reader picks where to buy. DB-free for v1; optionally persist picks to a parts table later.
+- LONG-TERM: retailers DO have internal APIs but they're partner/affiliate-gated, not public. The
+  real path is pursuing FCP/Turner affiliate API access once the site has traffic (also monetizes
+  via commission). "Doesn't exist" vs "behind a partnership paywall" — it's the latter.
+- The engine field (already built on the guide form) is the context-provider for these searches.
 
 ---
 
-## Key Conventions
+## FEATURE: Build Showcase (IN PROGRESS — Stage 1 DONE & merged to main/live)
 
-### TypeScript
-- No `any` types — always define interfaces
-- No unused imports or variables
-- Use `Array.from(new Set(...))` not `[...new Set(...)]`
-- Supabase profile joins return `T | T[]` — always handle both with `Array.isArray()`
+### Spec
+From user's ChatGPT-authored spec PDF: members document BMW 5 Series builds. Vehicle info, build
+overview, components across ~8 sections (exterior, interior, electronics, powertrain, drivetrain,
+suspension, wheels_tires, brakes), photo galleries, documentation uploads, cost rollups, progress
+%, search filters. Mobile-first. Living build journal.
 
-### Next.js
-- `useSearchParams()` always needs a `<Suspense>` boundary
-- Server components use `src/lib/supabase-server.ts`
-- Client components use `src/lib/supabase.ts`
-- Dynamic params are `Promise<{...}>` in Next.js 15 — always `await params`
-- Images from external URLs need to be in `next.config.js` remotePatterns
+### DATABASE (LIVE on production — applied via Supabase tools, NOT dev-branched since free plan)
+Three tables, all RLS-enabled. Migration files committed in `supabase/migrations/`:
+`20260619_create_build_showcase_tables.sql`, `..._fix_showcase_member_visibility_policies.sql`,
+`..._build_media_storage_policies.sql`. (These mirror what's already applied — committing them is
+repo-sync only, they don't re-run.)
 
-### Styling
-- Dark theme: `#0f0f0f` background, white text
-- Blue accent: `#0055b3`
-- Generation colors defined in `forum-config.ts` GEN_COLORS
-- Tailwind only — no CSS modules
-- Buttons: `rounded-lg`, consistent padding `px-4 py-2`
+- **`builds`**: id, user_id→profiles(id), year, generation, model, engine, transmission,
+  exterior_color, interior_color, mileage, vin (PRIVATE), production_date, factory_options,
+  build_name (NOT NULL), build_description, build_goals, inspiration, moderation_status, build_status,
+  admin_notes, verified_at, created_at, updated_at.
+- **`build_components`**: id, build_id→builds(cascade), section (8-value check), category, name
+  (NOT NULL), manufacturer, supplier, part_number, cost numeric(10,2), quantity, status
+  (planned/ordered/installed/removed), installed_date, description, sort_order, created_at.
+  ONE flexible table for ALL sections (section + category columns), NOT a table per section.
+- **`build_photos`**: id, build_id→builds(cascade), component_id→build_components(set null), url,
+  media_type (photo/document), gallery_category (6-value check), caption, sort_order, created_at.
 
-### Auth & Roles
-- `useAuth()` hook from AuthProvider exposes: `user`, `profile`, `loading`, `isTier2`, `isAdmin`, `isModerator`, `signOut`
-- Tier 1 = view only (new signups), Tier 2 = full posting access (admin approved)
-- TierBadge component: BMW Roundel SVG for T1, M stripe SVG for T2
-- Admin routes protected by middleware + server-side role check in AdminLayout
+### TWO status axes (kept SEPARATE on purpose)
+- `moderation_status`: draft → pending_initial → (admin approves → author picks `in_progress_shared`
+  OR `proofreading`) → pending_final → verified → also `rejected` (with admin_notes). TWO admin
+  gates (entry + final) — intentional, ties into the FUTURE badge-based moderator system.
+- `build_status` (real-world car state): planning / in_progress / complete / sold / retired.
+  Independent of moderation (e.g. a verified-locked build can still flip to "sold").
 
----
+### Visibility / RLS (behavior-tested, working)
+- Public (logged-out): sees only `verified` builds.
+- Logged-in members: see `verified` + `in_progress_shared` (NOT drafts/proofreading of others).
+- Owner: sees all their own. Admin/moderator (`profiles.role in ('admin','moderator')`): sees all.
+- INSERT: owner only, must be `moderation_status='draft'`.
+- UPDATE: owner only AND not `verified` (the LOCK); admins always. So verified = frozen/locked.
+- DELETE: owner only for draft/rejected; admins always.
+- Components & photos inherit visibility via parent build; write requires owning a non-verified build.
+- NOTE: SELECT policies use `auth.uid() is not null` for the member tier (NOT `auth.role()` —
+  that was the original bug, fixed in the visibility-fix migration; auth.role() is null in some
+  contexts and broke member visibility).
 
-## Supabase Storage Buckets
-- `hero-images` — public — homepage M5 photos, background images, OG image
-- `tech-documents` — public — uploaded tech docs and PDFs
+### Storage (build-media bucket, public)
+- Public bucket (chosen: build photos aren't sensitive; URLs are unguessable; discoverability via
+  the builds RLS is the real gate). Reads open; writes (insert/update/delete on storage.objects)
+  restricted to the build's OWNER, scoped by path, and blocked once build is verified.
+- **CRITICAL upload path convention:** files MUST be uploaded as `{build_id}/...` (build id as the
+  FIRST folder). The storage policies check `(storage.foldername(name))[1]` = a build the user owns.
+  Stage 3 upload code MUST follow this or uploads get denied.
 
-### Hero image URLs
-```
-E34 M5: https://xgfvrlrbeymronphmpii.supabase.co/storage/v1/object/public/hero-images/E34%20M5.png
-E39 M5: https://xgfvrlrbeymronphmpii.supabase.co/storage/v1/object/public/hero-images/E39%20M5.png
-E60 M5: https://xgfvrlrbeymronphmpii.supabase.co/storage/v1/object/public/hero-images/E60%20M5.png
-F10 M5: https://xgfvrlrbeymronphmpii.supabase.co/storage/v1/object/public/hero-images/F10%20M5.png
-G30 M5: https://xgfvrlrbeymronphmpii.supabase.co/storage/v1/object/public/hero-images/G30%20M5.png
-Background: https://xgfvrlrbeymronphmpii.supabase.co/storage/v1/object/public/hero-images/HOMEPAGE%20BACKGROUND.png?v=2
-OG image: https://xgfvrlrbeymronphmpii.supabase.co/storage/v1/object/public/hero-images/og-image.png
-```
+### Frontend — Stage 1 (DONE, merged, live)
+- `src/components/showcase/BuildSubmitForm.tsx` + page at `src/app/builds/submit/page.tsx`
+  (route `/builds/submit` — moved from `/showcase/submit` to match the existing `/builds` nav).
+- Save-as-you-go: no id → empty form, on save INSERT draft + redirect to `/builds/submit?id={id}`;
+  with id → load + UPDATE. URL carries the draft id (survives refresh, no dupes).
+- Covers Vehicle Information + Build Overview only. Required to save: build_name, year, generation,
+  model. Engine field = `ENGINES_BY_GENERATION[gen]` dropdown + custom-text override (for swaps).
+  Verified builds load read-only.
+- VERIFIED WORKING: test draft "joker build" (F10 535i / N55B30) inserted correctly via live RLS,
+  owner + moderation_status='draft' + build_status='planning' all correct.
+- NOTE: there's an existing "Under construction" placeholder at `/builds` (the showcase landing).
+  Stage 4 display will replace it.
 
----
+### Build Showcase — REMAINING STAGES (build in order, each its own branch/PR)
+- **Stage 2 — Components:** repeatable component blocks writing `build_components`, attached to a
+  draft by its id. Start with a few core sections (e.g. powertrain, suspension, wheels_tires).
+  Shared component schema (name, manufacturer, supplier, part_number, cost, quantity, status, etc.).
+- **Stage 3 — Media:** photo/doc upload to `build-media` using the `{build_id}/...` path, writing
+  `build_photos`. Public bucket so plain public URLs are fine for display.
+- **Stage 4 — Moderation flow + display:** submit-for-review transitions, admin review queue,
+  public/member showcase grid + per-build pages (replaces the `/builds` placeholder), search
+  filters, cost rollups (computed from build_components), progress % (status→percent avg).
 
-## Forum Structure
+## NEXT-UP / PARKED IDEAS (user's own list, roughly prioritized)
+1. Build Showcase Stage 2 (components) — the immediate next build.
+2. Badge-based member system granting moderation/review authority (instead of many member tiers).
+   Relevant to the two-gate showcase moderation + relaxing the verified-edit lock later.
+3. Parts pricing v1 (author-opens-search design above).
+4. Rename "Performance" section → "Mods & Retrofits" (engine options there should allow the full
+   cross-generation list via ALL_ENGINES, for swap guides).
+5. Estimated-cost autofill on guides (pull from parts/part# data) — depends on parts pricing.
+6. Playwright E2E test suite (E2E_TESTS_PROMPT.md exists as a reference draft).
+7. Estimated cost field currently free-text on performance guides.
 
-### Generation subforums (per gen: E34, E39, E60, F10, G30)
-- **Engine** — expandable, reveals per-engine subforums (see GENERATION_ENGINES in forum-config.ts)
-- **Drivetrain** — transmission, driveshaft, differential, clutch
-- **Wheels, tires, suspension & brakes**
-- **Electrical systems**
-- **General discussion**
-- **Marketplace**
-
-Note: Build showcase subforum was removed — there is a dedicated /builds section.
-
-### Engine subforums (nested under Engine per generation)
-Each engine labeled as: `{ENGINE_CODE} — {models it was offered in}`
-Full lineups defined in `GENERATION_ENGINES` in `forum-config.ts`.
-
-### Regional subforums
-Northeast US, Southeast US, Midwest US, Southwest US, West Coast US, Eastern Canada, Western Canada
-
-### M5 chassis code note
-The G30 generation's M5 uses chassis code **F90**, not G30 (BMW reused the prior letter for the M5 variant). The upcoming G60 generation's M5 will use **G90**. This is why the G30 hero background image is stored in Supabase as `F90 LIVE BACKGROUND.png` rather than `G30 LIVE BACKGROUND.png` — keep this in mind when adding or referencing per-generation M5 assets.
-
----
-
-## Pending Work
-- **Per-generation hero backgrounds** — user is creating custom artwork for each generation (E34–G30) to swap in as the hero background when that gen's car is hovered. URLs to be provided once uploaded to Supabase.
-- **Build showcase** — waiting on finished build book PDF to develop the template and showcase page format
-- **Rim fitment tool** — being developed in a separate Claude Code session at `/technical/fitment`
-
----
-
-## Deployment Workflow
-1. Make code changes in project folder
-2. GitHub Desktop — commit with descriptive message → Push origin
-3. Vercel auto-deploys from main branch
-4. Check Vercel for build errors
-5. Common errors: unused vars/imports, `any` types, missing Suspense for useSearchParams
-
----
-
-## Admin Access
-- Admin dashboard at `/admin` — only accessible to role=admin or role=moderator
-- Your user ID: `a8c167c6-4f0e-4ba3-8485-9be951da2141`
-- To set admin: `UPDATE public.profiles SET role = 'admin' WHERE id = 'a8c167c6-4f0e-4ba3-8485-9be951da2141';`
-
----
-
-## Google Search Console
-- Verified and sitemap submitted at `fiveserieshq.com/sitemap.xml`
-- Status: Success
+## Assistant working notes / tone
+- User works in Claude Code (Git Bash) + commits via GitHub Desktop. Provide a commit summary every
+  time. Generate edits as `*-prompt.md` drop-in files (gitignored), not terminal pastes.
+- User has deep BMW domain knowledge — defer to them on car facts, but DO flag likely errors
+  (caught the Euro-only E39 535i and E60 N53 this way).
+- Use ask-the-user multiple-choice for design forks; design DB changes on paper first, show exact
+  SQL, get explicit approval before applying. Free plan = production-direct (new isolated tables are
+  low risk); always verify with read-only queries after.
+- Build big features in staged, individually-mergeable increments.
