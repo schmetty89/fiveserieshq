@@ -8,6 +8,7 @@ import { ENGINES_BY_GENERATION } from '@/lib/technical-config'
 import { useAuth } from '@/components/auth/AuthProvider'
 import { createClient } from '@/lib/supabase'
 import { BuildComponents } from './BuildComponents'
+import { BuildPhotos } from './BuildPhotos'
 
 interface Props {
   buildId?: string
@@ -44,7 +45,7 @@ export function BuildSubmitForm({ buildId }: Props) {
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState('')
   const [saved, setSaved] = useState(false)
-  const [activeTab, setActiveTab] = useState<'build_info' | 'components'>('build_info')
+  const [activeTab, setActiveTab] = useState<'build_info' | 'components' | 'photos'>('build_info')
 
   useEffect(() => {
     if (!buildId || !user) { setLoadingBuild(false); return }
@@ -200,6 +201,21 @@ export function BuildSubmitForm({ buildId }: Props) {
           }`}
         >
           Components
+        </button>
+        <button
+          type="button"
+          onClick={() => { if (buildId) setActiveTab('photos') }}
+          disabled={!buildId}
+          title={!buildId ? 'Save your build info first to add photos.' : undefined}
+          className={`pb-2 text-sm font-medium transition-colors ${
+            activeTab === 'photos'
+              ? 'text-gray-900 border-b-2 border-gray-900 -mb-px'
+              : buildId
+              ? 'text-gray-400 hover:text-gray-600'
+              : 'text-gray-300 cursor-not-allowed'
+          }`}
+        >
+          Photos
         </button>
       </div>
 
@@ -490,6 +506,10 @@ export function BuildSubmitForm({ buildId }: Props) {
 
       {activeTab === 'components' && buildId && (
         <BuildComponents buildId={buildId} isVerified={isVerified} />
+      )}
+
+      {activeTab === 'photos' && buildId && (
+        <BuildPhotos buildId={buildId} isVerified={isVerified} />
       )}
     </div>
   )
