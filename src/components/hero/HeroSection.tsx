@@ -16,7 +16,7 @@ const GENERATION_MODELS: Record<Generation, string[]> = {
 }
 
 // Nürburgring background
-const BG_IMAGE = 'https://xgfvrlrbeymronphmpii.supabase.co/storage/v1/object/public/hero-images/HOMEPAGE%20BACKGROUND.png?v=2'
+const BG_IMAGE = 'https://xgfvrlrbeymronphmpii.supabase.co/storage/v1/object/public/hero-images/HOMEPAGE%20BACKGROUND.png'
 
 // Per-generation live backgrounds — crossfade in on hover
 const GEN_BG_IMAGES: Record<Generation, string> = {
