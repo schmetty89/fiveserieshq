@@ -273,8 +273,8 @@ export function BuildPhotos({ buildId, isVerified }: Props) {
   }
 
   async function updateSortOrder(reordered: BuildPhoto[]) {
-    for (const [index, photo] of reordered.entries()) {
-      await supabase.from('build_photos').update({ sort_order: index }).eq('id', photo.id)
+    for (let i = 0; i < reordered.length; i++) {
+      await supabase.from('build_photos').update({ sort_order: i }).eq('id', reordered[i].id)
     }
   }
 
