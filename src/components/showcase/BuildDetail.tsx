@@ -262,7 +262,24 @@ export function BuildDetail({ buildId }: Props) {
             ? 'bg-gray-50 border border-gray-200 text-gray-600'
             : 'bg-amber-50 border border-amber-100 text-amber-700'
         }`}>
-          {build.moderation_status === 'draft' && 'This build is a draft. Submit it for review when ready.'}
+          {build.moderation_status === 'draft' && (
+            <div className="flex items-center justify-between gap-4">
+              <span>This build is a draft. Submit it for review when ready.</span>
+              <button
+                onClick={async () => {
+                  const supabase = createClient()
+                  await supabase
+                    .from('builds')
+                    .update({ moderation_status: 'pending_initial' })
+                    .eq('id', build.id)
+                  window.location.reload()
+                }}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-900 text-white text-xs font-medium hover:bg-gray-700 transition-colors flex-shrink-0"
+              >
+                Submit for review
+              </button>
+            </div>
+          )}
           {build.moderation_status === 'pending_initial' && 'Your build is pending initial review.'}
           {build.moderation_status === 'in_progress_shared' && 'Your build is under review and visible to members.'}
           {build.moderation_status === 'proofreading' && 'Your build is in proofreading.'}
