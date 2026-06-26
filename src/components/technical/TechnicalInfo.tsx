@@ -208,25 +208,6 @@ function TechnicalInfoInner() {
           )}
         </div>
 
-        {/* ── Fitment tool callout (documents section only) ── */}
-        {activeSection === 'documents' && (
-          <Link
-            href={`/technical/fitment?gen=${activeGen}`}
-            className="flex items-center justify-between gap-4 p-4 mb-6 rounded-xl border border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-colors group"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 text-lg" style={{ background: genColors.bg }}>
-                🔩
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-900">Rim fitment guide</p>
-                <p className="text-xs text-gray-400">Bolt patterns, offset ranges, OEM specs, and community-verified wheel combos for the {activeGen}</p>
-              </div>
-            </div>
-            <ChevronRight size={16} className="text-gray-300 group-hover:text-gray-400 flex-shrink-0 transition-colors" />
-          </Link>
-        )}
-
         {/* ── Documents section ── */}
         {activeSection === 'documents' && (
           loading ? <LoadingSkeleton /> : docs.length === 0 ? (
@@ -284,6 +265,16 @@ function TechnicalInfoInner() {
         {/* ── Apps section ── */}
         {activeSection === 'apps' && (
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            <Link
+              href={`/technical/fitment?gen=${activeGen}`}
+              className="border border-gray-100 rounded-xl p-4 hover:border-gray-200 hover:bg-gray-50 transition-colors group block"
+            >
+              <div className="w-9 h-9 rounded-lg flex items-center justify-center text-xl mb-3 bg-gray-100">
+                🔩
+              </div>
+              <p className="text-sm font-medium text-gray-800 group-hover:text-gray-900 mb-1">Rim fitment tool</p>
+              <p className="text-xs text-gray-400 leading-snug">Bolt patterns, offset ranges, and OEM specs for the {activeGen}</p>
+            </Link>
             {APPS_SYSTEMS.map(sys => (
               <Link key={sys.id} href={sys.link}
                 className="border border-gray-100 rounded-xl p-4 hover:border-gray-200 hover:bg-gray-50 transition-colors group block">
