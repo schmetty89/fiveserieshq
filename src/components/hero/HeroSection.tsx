@@ -128,7 +128,7 @@ export function HeroSection() {
         </div>
       )}
 
-      <div className="relative z-10 flex flex-col" style={{ minHeight: '680px' }}>
+      <div className="relative z-10 flex flex-col" style={{ minHeight: 'min(680px, 100svh)' }}>
 
         {/* Active gen overlay */}
         <div className="flex-1 flex flex-col items-center justify-center pt-14 pb-4 px-6 text-center">
@@ -164,17 +164,17 @@ export function HeroSection() {
 
         {/* Hero copy — bottom, above the selector strip */}
         <div
-          className="transition-all duration-300 text-center px-6 pb-6"
+          className="transition-all duration-300 text-center px-4 sm:px-6 pb-4 sm:pb-6"
           style={{ opacity: active ? 0 : 1, pointerEvents: active ? 'none' : 'auto' }}
         >
           <h1
-            className="text-[2.344rem] sm:text-[2.813rem] font-bold text-white leading-tight mb-3"
+            className="text-2xl sm:text-[2.344rem] lg:text-[2.813rem] font-bold text-white leading-tight mb-3"
             style={{ fontVariantCaps: 'small-caps' }}
           >
             Five Generations. One Community.
           </h1>
           <p
-            className="text-[1.969rem] text-white/50"
+            className="text-base sm:text-xl lg:text-[1.969rem] text-white/50"
             style={{ fontVariantCaps: 'small-caps' }}
           >
             The BMW 5 Series has had five generations, countless variants, and millions of passionate owners. It&apos;s never had a hub. Until now.
@@ -196,7 +196,7 @@ export function HeroSection() {
                 onMouseLeave={() => handleGenHover(null)}
                 onClick={() => handleGenClick(gen)}
                 aria-label={`Explore BMW ${gen} — ${GENERATION_YEARS[gen]}`}
-                className="py-5 text-sm sm:text-base font-black tracking-[3px] uppercase transition-all duration-300 cursor-pointer"
+                className="py-3 sm:py-5 text-xs sm:text-sm lg:text-base font-black tracking-[2px] sm:tracking-[3px] uppercase transition-all duration-300 cursor-pointer"
                 style={{
                   color: isActive ? color : 'rgba(255,255,255,0.5)',
                   textShadow: isActive ? `0 0 8px ${color}, 0 0 18px ${color}` : 'none',
