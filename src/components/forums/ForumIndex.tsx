@@ -7,15 +7,51 @@ import { GENERATIONS, Generation } from '@/types'
 import { GENERATION_YEARS } from '@/types'
 import { GEN_SUBFORUM_CATS, REGIONAL_SUBFORUMS, GEN_COLORS, GENERATION_ENGINES, GENERATION_TRANSMISSIONS } from '@/lib/forum-config'
 import { useAuth } from '@/components/auth/AuthProvider'
-
-const GEN_THREAD_COUNTS: Record<Generation, number> = {
-  E34: 1240, E39: 3800, E60: 2100, F10: 1900, G30: 1400,
-}
+import { createClient } from '@/lib/supabase'
 
 const TECH_CATS = ['engine', 'drivetrain', 'suspension', 'electrical']
 
 export function ForumIndex() {
   const { user } = useAuth()
+  const [genThreadCounts, setGenThreadCounts] = useState<Record<string, number>>({
+    E34: 0, E39: 0, E60: 0, F10: 0, G30: 0,
+  })
+  const [regionalThreadCount, setRegionalThreadCount] = useState<number>(0)
+  const [countsLoading, setCountsLoading] = useState(true)
+
+  useEffect(() => {
+    async function fetchCounts() {
+      const supabase = createClient()
+
+      const { data: genData } = await supabase
+        .from('threads')
+        .select('generation')
+        .eq('is_deleted', false)
+        .not('generation', 'is', null)
+
+      if (genData) {
+        const counts: Record<string, number> = { E34: 0, E39: 0, E60: 0, F10: 0, G30: 0 }
+        for (const row of genData) {
+          if (row.generation && counts[row.generation] !== undefined) {
+            counts[row.generation]++
+          }
+        }
+        setGenThreadCounts(counts)
+      }
+
+      const { count: regionalCount } = await supabase
+        .from('threads')
+        .select('*', { count: 'exact', head: true })
+        .eq('is_deleted', false)
+        .not('region_id', 'is', null)
+
+      setRegionalThreadCount(regionalCount ?? 0)
+      setCountsLoading(false)
+    }
+
+    fetchCounts()
+  }, [])
+
   const [activeFilter, setActiveFilter] = useState<Generation | 'all' | 'regional'>('all')
   const [expandedEngineGen, setExpandedEngineGen] = useState<Generation | null>(null)
   const [expandedDrivetrainGen, setExpandedDrivetrainGen] = useState<Generation | null>(null)
@@ -90,7 +126,7 @@ export function ForumIndex() {
                     BMW {gen} · {GENERATION_YEARS[gen]}
                   </span>
                   <span className="text-xs text-gray-400">
-                    {GEN_THREAD_COUNTS[gen].toLocaleString()} threads
+                    {countsLoading ? '—' : genThreadCounts[gen].toLocaleString()} thread{genThreadCounts[gen] !== 1 ? 's' : ''}
                   </span>
                 </div>
 
@@ -268,7 +304,7 @@ export function ForumIndex() {
             </span>
             <span className="text-sm font-medium text-gray-800 flex-1">Regional discussion — US & Canada</span>
             <span className="text-xs text-gray-400">
-              {REGIONAL_SUBFORUMS.reduce((a) => a + 180, 0).toLocaleString()} threads
+              {countsLoading ? '—' : regionalThreadCount.toLocaleString()} thread{regionalThreadCount !== 1 ? 's' : ''}
             </span>
           </div>
 
