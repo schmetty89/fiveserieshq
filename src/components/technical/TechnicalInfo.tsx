@@ -208,25 +208,6 @@ function TechnicalInfoInner() {
           )}
         </div>
 
-        {/* ── Fitment tool callout (documents section only) ── */}
-        {activeSection === 'documents' && (
-          <Link
-            href={`/technical/fitment?gen=${activeGen}`}
-            className="flex items-center justify-between gap-4 p-4 mb-6 rounded-xl border border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-colors group"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 text-lg" style={{ background: genColors.bg }}>
-                🔩
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-900">Rim fitment guide</p>
-                <p className="text-xs text-gray-400">Bolt patterns, offset ranges, OEM specs, and community-verified wheel combos for the {activeGen}</p>
-              </div>
-            </div>
-            <ChevronRight size={16} className="text-gray-300 group-hover:text-gray-400 flex-shrink-0 transition-colors" />
-          </Link>
-        )}
-
         {/* ── Documents section ── */}
         {activeSection === 'documents' && (
           loading ? <LoadingSkeleton /> : docs.length === 0 ? (
