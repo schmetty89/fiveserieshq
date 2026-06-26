@@ -48,7 +48,7 @@ export default function AdminBuildsPage() {
       .select('id, build_name, moderation_status, build_status, created_at, admin_notes, profiles(username)')
       .not('moderation_status', 'in', '("draft","verified")')
       .order('created_at', { ascending: true })
-    setBuilds((data as PendingBuild[]) ?? [])
+    setBuilds((data as unknown as PendingBuild[]) ?? [])
     setLoading(false)
   }
 
