@@ -136,6 +136,45 @@ export const REGIONAL_SUBFORUMS = [
 
 export type RegionalId = typeof REGIONAL_SUBFORUMS[number]['id']
 
+export const COMMUNITY_SUBFORUMS = [
+  {
+    id: 'introductions',
+    name: 'Introductions',
+    icon: '👋',
+    desc: "New to the community? Tell us about yourself and your car.",
+  },
+  {
+    id: 'general_bmw',
+    name: 'General BMW Discussion',
+    icon: '🚗',
+    desc: 'Anything BMW — not just 5 Series.',
+  },
+  {
+    id: 'lounge',
+    name: 'Lounge',
+    icon: '💬',
+    desc: 'Off topic. Talk about whatever.',
+  },
+  {
+    id: 'site_feedback',
+    name: 'Site Feedback',
+    icon: '💡',
+    desc: 'Suggestions, bug reports, and ideas for FiveSeriesHQ.',
+  },
+  {
+    id: 'marketplace',
+    name: 'Marketplace',
+    icon: '🛒',
+    desc: 'Buy, sell, and trade parts and cars across all generations.',
+  },
+  {
+    id: 'events_meetups',
+    name: 'Events & Meetups',
+    icon: '📍',
+    desc: 'Organize and discuss community events.',
+  },
+]
+
 export const GEN_COLORS: Record<Generation, { bg: string; text: string }> = {
   E34: { bg: '#FAECE7', text: '#993C1D' },
   E39: { bg: '#E6F1FB', text: '#185FA5' },
