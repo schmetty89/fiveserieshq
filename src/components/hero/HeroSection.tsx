@@ -224,7 +224,7 @@ export function HeroSection() {
 
         {/* Hero copy — bottom, above the selector strip */}
         <div
-          className="transition-all duration-300 text-center px-4 sm:px-6 pb-4 sm:pb-6 mb-8 sm:mb-0"
+          className="hidden sm:block transition-all duration-300 text-center px-4 sm:px-6 pb-4 sm:pb-6 mb-8 sm:mb-0"
           style={{ opacity: active ? 0 : 1, pointerEvents: active ? 'none' : 'auto' }}
         >
           <h1
