@@ -204,7 +204,7 @@ export function HeroSection() {
                 {GENERATION_YEARS[active]}
               </div>
               {/* Model list */}
-              <div className="flex items-center justify-center gap-2 mt-3 flex-wrap">
+              <div className="hidden sm:flex items-center justify-center gap-2 mt-3 flex-wrap">
                 {GENERATION_MODELS[active].map(model => (
                   <span
                     key={model}
