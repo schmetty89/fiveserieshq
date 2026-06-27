@@ -64,7 +64,7 @@ export function TemplatePickerModal({ onSelect, onClose }: Props) {
           ) : (
             <div className="space-y-3">
               <p className="text-sm text-gray-600 mb-4">
-                The template will pre-fill the guide title, section, system, and basic steps. You'll still need to add tools, part numbers, photos, and elaborate on each step.
+                The template will pre-fill the guide title, section, system, and basic steps. You&apos;ll still need to add tools, part numbers, photos, and elaborate on each step.
               </p>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 {GENERATIONS.map(gen => (
