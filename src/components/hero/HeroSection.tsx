@@ -193,7 +193,7 @@ export function HeroSection() {
         {/* Active gen overlay */}
         <div className="flex-1 flex flex-col items-center justify-center pt-14 pb-4 px-6 text-center">
           {active && (
-            <div className="absolute top-14 left-0 right-0 text-center pointer-events-none px-4">
+            <div className="absolute top-4 sm:top-14 left-0 right-0 text-center pointer-events-none px-4">
               <div className="text-5xl font-black text-white/10 tracking-[8px] uppercase leading-none">
                 {active}
               </div>
