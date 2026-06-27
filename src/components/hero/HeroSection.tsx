@@ -155,6 +155,7 @@ export function HeroSection() {
                     width: '84%',
                     top: `${spot.top}%`,
                     height: `${spot.height}%`,
+                    background: 'rgba(255,0,0,0.3)',
                   }}
                   onMouseEnter={e => {
                     ;(e.currentTarget as HTMLElement).style.borderColor = glowColor
