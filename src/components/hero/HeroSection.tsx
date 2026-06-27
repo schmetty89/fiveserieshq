@@ -41,9 +41,9 @@ const DEFAULT_PLATE_HOTSPOTS = [
 
 // Mobile plate wall hotspots — same for all gens, centered on pillar
 const MOBILE_PLATE_HOTSPOTS = [
-  { label: 'Forums', href: '/forums',    top: 36, height: 9 },
-  { label: 'Builds', href: '/builds',    top: 55, height: 9 },
-  { label: 'Tech',   href: '/technical', top: 74, height: 9 },
+  { label: 'Forums', href: '/forums',    top: 31, height: 7 },
+  { label: 'Builds', href: '/builds',    top: 50, height: 7 },
+  { label: 'Tech',   href: '/technical', top: 69, height: 7 },
 ]
 
 // Per-generation overrides where the live background's plate placement differs
