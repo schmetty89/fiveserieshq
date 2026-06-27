@@ -55,7 +55,7 @@ export function TechSubmitForm({ defaultGen, defaultSection, backHref = '/techni
     }))
     setGuide(g => ({
       ...g,
-      steps: prefillTemplate.steps,
+      procedure: prefillTemplate.steps,
     }))
   }, [prefillTemplate])
 
