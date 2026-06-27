@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Loader2, AlertCircle, CheckCircle, Upload, FileText, Wrench } from 'lucide-react'
 import Link from 'next/link'
 import { GENERATIONS } from '@/types'
@@ -9,14 +9,17 @@ import { submitTechDocument, submitTechArticle } from '@/lib/technical-data'
 import { useAuth } from '@/components/auth/AuthProvider'
 import { createClient } from '@/lib/supabase'
 import { GUIDE_FIELDS, composeGuideBody, type GuideSection, SOCKET_CATEGORIES, ALL_DRIVES, availableDrives, ratchetCount, variantsFor, validateChecklist, type ChecklistValue } from '@/lib/article-fields'
+import { GuideTemplate } from '@/lib/guide-templates'
 
 interface Props {
   defaultGen?: string
   defaultSection?: string
   backHref?: string
+  prefillTemplate?: (GuideTemplate & { _prefillGen: string }) | null
+  onTemplateClear?: () => void
 }
 
-export function TechSubmitForm({ defaultGen, defaultSection, backHref = '/technical' }: Props) {
+export function TechSubmitForm({ defaultGen, defaultSection, backHref = '/technical', prefillTemplate, onTemplateClear }: Props) {
   const { user } = useAuth()
   const supabase = createClient()
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -39,6 +42,22 @@ export function TechSubmitForm({ defaultGen, defaultSection, backHref = '/techni
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [submitted, setSubmitted] = useState(false)
+
+  useEffect(() => {
+    if (!prefillTemplate) return
+    setForm(f => ({
+      ...f,
+      section: prefillTemplate.section,
+      system: prefillTemplate.system,
+      generation: prefillTemplate._prefillGen,
+      title: prefillTemplate.title,
+      contentType: 'guide',
+    }))
+    setGuide(g => ({
+      ...g,
+      steps: prefillTemplate.steps,
+    }))
+  }, [prefillTemplate])
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
     setForm(f => ({ ...f, [e.target.name]: e.target.value }))
@@ -183,6 +202,24 @@ export function TechSubmitForm({ defaultGen, defaultSection, backHref = '/techni
         <div className="flex items-start gap-2.5 bg-red-50 border border-red-100 rounded-lg px-3.5 py-3">
           <AlertCircle size={15} className="text-red-500 flex-shrink-0 mt-0.5" />
           <p className="text-sm text-red-600">{error}</p>
+        </div>
+      )}
+
+      {prefillTemplate && (
+        <div className="flex items-center justify-between gap-3 bg-blue-50 border border-blue-100 rounded-lg px-3.5 py-3">
+          <p className="text-sm text-blue-700">
+            <span className="font-medium">Template loaded:</span> {prefillTemplate.title} — fill in the remaining fields and elaborate on the steps.
+          </p>
+          <button
+            type="button"
+            onClick={() => {
+              resetForm()
+              onTemplateClear?.()
+            }}
+            className="text-xs text-blue-500 hover:text-blue-700 transition-colors flex-shrink-0"
+          >
+            Clear
+          </button>
         </div>
       )}
 
