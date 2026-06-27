@@ -4,16 +4,18 @@ export async function getVideos({
   category,
   generation,
   search,
+  platform,
 }: {
   category?: string
   generation?: string
   search?: string
+  platform?: 'youtube' | 'instagram'
 } = {}) {
   const supabase = createClient()
   let query = supabase
     .from('videos')
     .select(`
-      id, youtube_id, title, channel_name,
+      id, youtube_id, instagram_url, platform, title, channel_name,
       category, generation, duration,
       like_count, created_at,
       profiles:submitted_by ( username )
@@ -21,6 +23,7 @@ export async function getVideos({
     .eq('approved', true)
     .order('created_at', { ascending: false })
 
+  if (platform) query = query.eq('platform', platform)
   if (category) query = query.eq('category', category)
   if (generation) query = query.eq('generation', generation)
   if (search) query = query.ilike('title', `%${search}%`)
@@ -31,24 +34,28 @@ export async function getVideos({
 }
 
 export async function submitVideo(video: {
-  youtubeId: string
+  platform: 'youtube' | 'instagram'
+  youtubeId?: string | null
+  instagramUrl?: string | null
   title: string
   channelName: string
   category: string
   generation: string
-  duration: string
+  duration?: string | null
   submittedBy: string
 }) {
   const supabase = createClient()
   const { error } = await supabase
     .from('videos')
     .insert({
-      youtube_id: video.youtubeId,
+      platform: video.platform,
+      youtube_id: video.youtubeId ?? null,
+      instagram_url: video.instagramUrl ?? null,
       title: video.title,
       channel_name: video.channelName,
       category: video.category,
       generation: video.generation,
-      duration: video.duration,
+      duration: video.duration || null,
       submitted_by: video.submittedBy,
       approved: false,
     })

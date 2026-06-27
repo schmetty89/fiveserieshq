@@ -24,7 +24,7 @@ export const DIAGNOSIS_SYSTEMS = [
 ] as const
 
 export const APPS_SYSTEMS = [
-  { id: 'fitment', name: 'Rim Fitment Guide', icon: '🔧', desc: 'Interactive wheel and tire fitment tool for all 5 Series generations', link: '/technical/fitment' },
+  { id: 'fitment', name: 'Rim fitment tool', icon: '🔧', desc: 'Interactive wheel and tire fitment tool for all 5 Series generations', link: '/technical/fitment' },
 ] as const
 
 export const DOC_CATEGORIES = [

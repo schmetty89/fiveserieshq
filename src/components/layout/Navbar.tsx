@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 import { Search, Bell, User, Menu, X, LogOut, ChevronDown } from 'lucide-react'
 import { useState, useRef, useEffect } from 'react'
@@ -54,15 +55,7 @@ export function Navbar() {
 
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2.5 flex-shrink-0">
-          <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-8 h-8 flex-shrink-0">
-            <circle cx="16" cy="16" r="16" fill="#0f0f0f"/>
-            <g transform="translate(4,8)">
-              <polygon points="0,16 4,0 8,10 12,0 16,16 13,16 12,6 8,16 4,6 3,16" fill="white"/>
-              <polygon points="0,16 1.5,16 5,4 4,0" fill="#1C69D4"/>
-              <polygon points="5,4 7,10 9,4 8,0 4,0" fill="#00005B"/>
-              <polygon points="9,4 11,10 15,0 12,0 9,4" fill="#C8102E"/>
-            </g>
-          </svg>
+          <Image src="/navbar-logo.png" alt="FiveSeriesHQ logo" width={32} height={32} className="w-8 h-8 flex-shrink-0" />
           <div className="leading-tight">
             <div className="text-[13px] font-medium text-white tracking-wide">The Five Series HQ</div>
           </div>

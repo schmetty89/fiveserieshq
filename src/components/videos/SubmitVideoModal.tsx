@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { X, Loader2, AlertCircle, CheckCircle } from 'lucide-react'
+import { X, Loader2, AlertCircle, CheckCircle, Youtube } from 'lucide-react'
 import { submitVideo } from '@/lib/video-data'
 import { VIDEO_CATEGORIES } from '@/lib/video-config'
 import { useAuth } from '@/components/auth/AuthProvider'
@@ -10,11 +10,23 @@ import { extractYouTubeId } from '@/lib/utils'
 
 interface Props { onClose: () => void; onSubmitted: () => void }
 
+function isValidInstagramUrl(url: string): boolean {
+  return url.includes('instagram.com/reel/') || url.includes('instagram.com/p/')
+}
+
+const instagramIcon = (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/>
+  </svg>
+)
+
 export function SubmitVideoModal({ onClose, onSubmitted }: Props) {
   const { user } = useAuth()
+  const [platform, setPlatform] = useState<'youtube' | 'instagram'>('youtube')
   const [form, setForm] = useState({
     url: '', title: '', channelName: '',
     category: '', generation: '', duration: '', notes: '',
+    instagramUrl: '', accountName: '',
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -30,23 +42,45 @@ export function SubmitVideoModal({ onClose, onSubmitted }: Props) {
     setError('')
     if (!user) return setError('You must be signed in to submit a video.')
 
-    const ytId = extractYouTubeId(form.url)
-    if (!ytId) return setError('Please enter a valid YouTube URL.')
-    if (!form.title.trim()) return setError('Please enter a title for the video.')
+    if (!form.title.trim()) return setError('Please enter a title.')
     if (!form.category) return setError('Please select a category.')
     if (!form.generation) return setError('Please select a generation.')
 
     setLoading(true)
     try {
-      await submitVideo({
-        youtubeId: ytId,
-        title: form.title.trim(),
-        channelName: form.channelName.trim() || 'Unknown',
-        category: form.category,
-        generation: form.generation,
-        duration: form.duration.trim() || '',
-        submittedBy: user.id,
-      })
+      if (platform === 'youtube') {
+        const ytId = extractYouTubeId(form.url)
+        if (!ytId) { setError('Please enter a valid YouTube URL.'); setLoading(false); return }
+        await submitVideo({
+          platform: 'youtube',
+          youtubeId: ytId,
+          instagramUrl: null,
+          title: form.title.trim(),
+          channelName: form.channelName.trim() || 'Unknown',
+          category: form.category,
+          generation: form.generation,
+          duration: form.duration.trim() || null,
+          submittedBy: user.id,
+        })
+      } else {
+        if (!form.instagramUrl.trim()) { setError('Please enter an Instagram Reel URL.'); setLoading(false); return }
+        if (!isValidInstagramUrl(form.instagramUrl)) {
+          setError('Please enter a valid Instagram Reel URL (must contain instagram.com/reel/ or instagram.com/p/).')
+          setLoading(false)
+          return
+        }
+        await submitVideo({
+          platform: 'instagram',
+          youtubeId: null,
+          instagramUrl: form.instagramUrl.trim(),
+          title: form.title.trim(),
+          channelName: form.accountName.trim() || 'Unknown',
+          category: form.category,
+          generation: form.generation,
+          duration: null,
+          submittedBy: user.id,
+        })
+      }
       setSubmitted(true)
     } catch {
       setError('Failed to submit. Please try again.')
@@ -81,8 +115,30 @@ export function SubmitVideoModal({ onClose, onSubmitted }: Props) {
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="p-6 space-y-4">
+            {/* Platform toggle */}
+            <div className="flex items-center gap-1 p-1 bg-gray-100 rounded-lg w-fit">
+              <button
+                type="button"
+                onClick={() => setPlatform('youtube')}
+                className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
+                  platform === 'youtube' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                <Youtube size={13} /> YouTube
+              </button>
+              <button
+                type="button"
+                onClick={() => setPlatform('instagram')}
+                className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
+                  platform === 'instagram' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                {instagramIcon} Instagram
+              </button>
+            </div>
+
             <p className="text-sm text-gray-500 leading-relaxed">
-              Only YouTube links are supported. Videos must be relevant to BMW 5 Series ownership, builds, or maintenance.
+              Videos must be relevant to BMW 5 Series ownership, builds, or maintenance.
             </p>
 
             {error && (
@@ -92,12 +148,21 @@ export function SubmitVideoModal({ onClose, onSubmitted }: Props) {
               </div>
             )}
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">YouTube URL</label>
-              <input type="url" name="url" value={form.url} onChange={handleChange}
-                placeholder="https://youtube.com/watch?v=..."
-                className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-gray-900" />
-            </div>
+            {platform === 'youtube' ? (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">YouTube URL</label>
+                <input type="url" name="url" value={form.url} onChange={handleChange}
+                  placeholder="https://youtube.com/watch?v=..."
+                  className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-gray-900" />
+              </div>
+            ) : (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Instagram Reel URL</label>
+                <input type="url" name="instagramUrl" value={form.instagramUrl} onChange={handleChange}
+                  placeholder="https://www.instagram.com/reel/..."
+                  className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-gray-900" />
+              </div>
+            )}
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Video title</label>
@@ -106,20 +171,29 @@ export function SubmitVideoModal({ onClose, onSubmitted }: Props) {
                 className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-gray-900" />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            {platform === 'youtube' ? (
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Channel name</label>
+                  <input type="text" name="channelName" value={form.channelName} onChange={handleChange}
+                    placeholder="e.g. BMWDIYGarage"
+                    className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-gray-900" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Duration <span className="text-gray-400 font-normal">(optional)</span></label>
+                  <input type="text" name="duration" value={form.duration} onChange={handleChange}
+                    placeholder="e.g. 32:14"
+                    className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-gray-900" />
+                </div>
+              </div>
+            ) : (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Channel name</label>
-                <input type="text" name="channelName" value={form.channelName} onChange={handleChange}
-                  placeholder="e.g. BMWDIYGarage"
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Account name <span className="text-gray-400 font-normal">(@username)</span></label>
+                <input type="text" name="accountName" value={form.accountName} onChange={handleChange}
+                  placeholder="e.g. @bmwdiygarage"
                   className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-gray-900" />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Duration <span className="text-gray-400 font-normal">(optional)</span></label>
-                <input type="text" name="duration" value={form.duration} onChange={handleChange}
-                  placeholder="e.g. 32:14"
-                  className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-gray-900" />
-              </div>
-            </div>
+            )}
 
             <div className="grid grid-cols-2 gap-4">
               <div>
