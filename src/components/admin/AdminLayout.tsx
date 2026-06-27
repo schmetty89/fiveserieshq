@@ -8,7 +8,7 @@ import { getAdminCounts } from '@/lib/admin-data'
 import { cn } from '@/lib/utils'
 import {
   LayoutDashboard, Building2, Youtube,
-  BookOpen, MessageSquare, Users, ArrowLeft, Loader2
+  BookOpen, MessageSquare, Users, ArrowLeft, Loader2, Hammer
 } from 'lucide-react'
 
 interface Counts {
@@ -16,6 +16,7 @@ interface Counts {
   videos: number
   techDocs: number
   forums: number
+  builds: number
 }
 
 const NAV = [
@@ -24,6 +25,7 @@ const NAV = [
   { href: '/admin/videos',    label: 'Videos',      icon: Youtube,         exact: false },
   { href: '/admin/technical', label: 'Technical',   icon: BookOpen,        exact: false },
   { href: '/admin/forums',    label: 'Forums',      icon: MessageSquare,   exact: false },
+  { href: '/admin/builds',    label: 'Builds',      icon: Hammer,          exact: false },
   { href: '/admin/members',   label: 'Members',     icon: Users,           exact: false },
 ]
 
@@ -32,7 +34,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter()
   const [role, setRole] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
-  const [counts, setCounts] = useState<Counts>({ vendors: 0, videos: 0, techDocs: 0, forums: 0 })
+  const [counts, setCounts] = useState<Counts>({ vendors: 0, videos: 0, techDocs: 0, forums: 0, builds: 0 })
 
   useEffect(() => {
     getMyRole().then(r => {
@@ -73,6 +75,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
             const badge = label === 'Vendors' ? counts.vendors
               : label === 'Videos' ? counts.videos
               : label === 'Technical' ? counts.techDocs
+              : label === 'Builds' ? counts.builds
               : 0
 
             return (

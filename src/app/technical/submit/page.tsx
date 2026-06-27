@@ -1,34 +1,63 @@
 'use client'
 
-import { Suspense } from 'react'
+import { Suspense, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
-import Link from 'next/link'
-import { ArrowLeft } from 'lucide-react'
 import { TechSubmitForm } from '@/components/technical/TechSubmitForm'
+import { TemplatePickerModal } from '@/components/technical/TemplatePickerModal'
+import { GuideTemplate } from '@/lib/guide-templates'
+import { LayoutTemplate } from 'lucide-react'
 
-function SubmitPageInner() {
-  const searchParams = useSearchParams()
-  const gen = searchParams.get('gen') ?? undefined
-  const section = searchParams.get('section') ?? undefined
-  const backHref = `/technical?gen=${gen ?? 'E39'}&section=${section ?? 'maintenance'}`
+function SubmitInner() {
+  const params = useSearchParams()
+  const defaultGen = params.get('gen') ?? undefined
+  const defaultSection = params.get('section') ?? undefined
+  const [showTemplateModal, setShowTemplateModal] = useState(false)
+  const [selectedTemplate, setSelectedTemplate] = useState<GuideTemplate | null>(null)
+
+  function handleTemplateSelect(template: GuideTemplate, generation: string) {
+    setSelectedTemplate({ ...template, _prefillGen: generation } as GuideTemplate & { _prefillGen: string })
+    setShowTemplateModal(false)
+  }
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
-      <Link href={backHref}
-        className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 mb-6 transition-colors">
-        <ArrowLeft size={14} /> Back to technical library
-      </Link>
-      <h1 className="text-2xl font-medium text-gray-900 mb-1">Submit technical content</h1>
-      <p className="text-sm text-gray-500 mb-8">Contribute a guide, document, or reference for the community.</p>
-      <TechSubmitForm defaultGen={gen} defaultSection={section} backHref={backHref} />
+      <div className="flex items-start justify-between mb-8">
+        <div>
+          <h1 className="text-2xl font-medium text-gray-900 mb-1">Submit a guide</h1>
+          <p className="text-sm text-gray-500">
+            Document your knowledge. Submissions are reviewed before going live.
+          </p>
+        </div>
+        <button
+          onClick={() => setShowTemplateModal(true)}
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 text-sm font-medium text-gray-700 hover:border-gray-300 hover:bg-gray-50 transition-colors flex-shrink-0"
+        >
+          <LayoutTemplate size={14} />
+          Start from template
+        </button>
+      </div>
+
+      <TechSubmitForm
+        defaultGen={defaultGen}
+        defaultSection={defaultSection}
+        prefillTemplate={selectedTemplate as (GuideTemplate & { _prefillGen: string }) | null}
+        onTemplateClear={() => setSelectedTemplate(null)}
+      />
+
+      {showTemplateModal && (
+        <TemplatePickerModal
+          onSelect={handleTemplateSelect}
+          onClose={() => setShowTemplateModal(false)}
+        />
+      )}
     </div>
   )
 }
 
-export default function SubmitPage() {
+export default function TechSubmitPage() {
   return (
     <Suspense fallback={<div className="h-96 bg-gray-50 animate-pulse rounded-xl max-w-3xl mx-auto my-8" />}>
-      <SubmitPageInner />
+      <SubmitInner />
     </Suspense>
   )
 }

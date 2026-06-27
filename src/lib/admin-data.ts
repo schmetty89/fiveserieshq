@@ -26,18 +26,20 @@ export async function requireModerator(): Promise<boolean> {
 // ── Dashboard counts ──────────────────────────────────────
 export async function getAdminCounts() {
   const supabase = createClient()
-  const [vendors, videos, techDocs, techArticles, threads] = await Promise.all([
+  const [vendors, videos, techDocs, techArticles, threads, builds] = await Promise.all([
     supabase.from('vendors').select('id', { count: 'exact' }).eq('approved', false).eq('rejected', false),
     supabase.from('videos').select('id', { count: 'exact' }).eq('approved', false).eq('rejected', false),
     supabase.from('tech_documents').select('id', { count: 'exact' }).eq('verified', false).eq('rejected', false),
     supabase.from('tech_articles').select('id', { count: 'exact' }).eq('verified', false).eq('rejected', false),
     supabase.from('forum_threads').select('id', { count: 'exact' }),
+    supabase.from('builds').select('id', { count: 'exact' }).not('moderation_status', 'in', '("draft","verified","rejected")'),
   ])
   return {
     vendors: vendors.count ?? 0,
     videos: videos.count ?? 0,
     techDocs: (techDocs.count ?? 0) + (techArticles.count ?? 0),
     forums: threads.count ?? 0,
+    builds: builds.count ?? 0,
   }
 }
 

@@ -1,22 +1,91 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Edit, ChevronRight, ChevronDown, MapPin } from 'lucide-react'
 import { GENERATIONS, Generation } from '@/types'
 import { GENERATION_YEARS } from '@/types'
-import { GEN_SUBFORUM_CATS, REGIONAL_SUBFORUMS, GEN_COLORS, GENERATION_ENGINES, GENERATION_TRANSMISSIONS } from '@/lib/forum-config'
+import { GEN_SUBFORUM_CATS, REGIONAL_SUBFORUMS, GEN_COLORS, GENERATION_ENGINES, GENERATION_TRANSMISSIONS, COMMUNITY_SUBFORUMS } from '@/lib/forum-config'
 import { useAuth } from '@/components/auth/AuthProvider'
-
-const GEN_THREAD_COUNTS: Record<Generation, number> = {
-  E34: 1240, E39: 3800, E60: 2100, F10: 1900, G30: 1400,
-}
+import { createClient } from '@/lib/supabase'
 
 const TECH_CATS = ['engine', 'drivetrain', 'suspension', 'electrical']
 
 export function ForumIndex() {
   const { user } = useAuth()
-  const [activeFilter, setActiveFilter] = useState<Generation | 'all' | 'regional'>('all')
+  const [genThreadCounts, setGenThreadCounts] = useState<Record<string, number>>({
+    E34: 0, E39: 0, E60: 0, F10: 0, G30: 0,
+  })
+  const [regionalThreadCount, setRegionalThreadCount] = useState<number>(0)
+  const [communityThreadCounts, setCommunityThreadCounts] = useState<Record<string, number>>({
+    introductions: 0,
+    general_bmw: 0,
+    lounge: 0,
+    site_feedback: 0,
+    marketplace: 0,
+    events_meetups: 0,
+  })
+  const [countsLoading, setCountsLoading] = useState(true)
+
+  useEffect(() => {
+    async function fetchCounts() {
+      const supabase = createClient()
+
+      const { data: genData } = await supabase
+        .from('threads')
+        .select('generation')
+        .eq('is_deleted', false)
+        .not('generation', 'is', null)
+
+      if (genData) {
+        const counts: Record<string, number> = { E34: 0, E39: 0, E60: 0, F10: 0, G30: 0 }
+        for (const row of genData) {
+          if (row.generation && counts[row.generation] !== undefined) {
+            counts[row.generation]++
+          }
+        }
+        setGenThreadCounts(counts)
+      }
+
+      const { count: regionalCount } = await supabase
+        .from('threads')
+        .select('*', { count: 'exact', head: true })
+        .eq('is_deleted', false)
+        .not('region_id', 'is', null)
+
+      setRegionalThreadCount(regionalCount ?? 0)
+
+      // Fetch community counts
+      const { data: communityData } = await supabase
+        .from('threads')
+        .select('community_category')
+        .eq('is_deleted', false)
+        .not('community_category', 'is', null)
+
+      if (communityData) {
+        const counts: Record<string, number> = {
+          introductions: 0,
+          general_bmw: 0,
+          lounge: 0,
+          site_feedback: 0,
+          marketplace: 0,
+          events_meetups: 0,
+        }
+        for (const row of communityData) {
+          if (row.community_category && counts[row.community_category] !== undefined) {
+            counts[row.community_category]++
+          }
+        }
+        setCommunityThreadCounts(counts)
+      }
+
+      setCountsLoading(false)
+    }
+
+    fetchCounts()
+  }, [])
+
+  const [activeFilter, setActiveFilter] = useState<Generation | 'all' | 'regional' | 'community'>('all')
   const [expandedEngineGen, setExpandedEngineGen] = useState<Generation | null>(null)
   const [expandedDrivetrainGen, setExpandedDrivetrainGen] = useState<Generation | null>(null)
   const [openTransmissionGroups, setOpenTransmissionGroups] = useState<Set<string>>(new Set())
@@ -30,9 +99,10 @@ export function ForumIndex() {
     })
   }
 
+  const showCommunity = activeFilter === 'all' || activeFilter === 'community'
   const showGen = activeFilter === 'all' || GENERATIONS.includes(activeFilter as Generation)
   const showRegional = activeFilter === 'all' || activeFilter === 'regional'
-  const filteredGens = activeFilter === 'all' || activeFilter === 'regional'
+  const filteredGens = activeFilter === 'all' || activeFilter === 'regional' || activeFilter === 'community'
     ? GENERATIONS
     : [activeFilter as Generation]
 
@@ -56,7 +126,7 @@ export function ForumIndex() {
 
       {/* Filter pills */}
       <div className="flex gap-2 flex-wrap mb-6">
-        {(['all', ...GENERATIONS, 'regional'] as const).map(f => (
+        {(['all', 'community', ...GENERATIONS, 'regional'] as const).map(f => (
           <button
             key={f}
             onClick={() => setActiveFilter(f as typeof activeFilter)}
@@ -66,10 +136,55 @@ export function ForumIndex() {
                 : 'border-gray-200 text-gray-500 hover:border-gray-300 hover:text-gray-700'
             }`}
           >
-            {f === 'all' ? 'All' : f === 'regional' ? '📍 Regional' : f}
+            {f === 'all' ? 'All' : f === 'regional' ? '📍 Regional' : f === 'community' ? '🌐 Community' : f}
           </button>
         ))}
       </div>
+
+      {/* Community subforums */}
+      {showCommunity && (
+        <div className="space-y-3 mb-6">
+          <div className="border border-gray-100 rounded-xl overflow-hidden">
+            {/* Community header */}
+            <div className="flex items-center gap-3 px-4 py-3 bg-gray-50 border-b border-gray-100">
+              <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-gray-900 text-white">
+                Community
+              </span>
+              <span className="text-sm font-medium text-gray-800 flex-1">
+                FiveSeriesHQ Community
+              </span>
+              <span className="text-xs text-gray-400">
+                {countsLoading ? '—' : Object.values(communityThreadCounts).reduce((a, b) => a + b, 0).toLocaleString()} thread{Object.values(communityThreadCounts).reduce((a, b) => a + b, 0) !== 1 ? 's' : ''}
+              </span>
+            </div>
+
+            {/* Community subforum rows */}
+            {COMMUNITY_SUBFORUMS.map((forum, idx) => (
+              <Link
+                key={forum.id}
+                href={`/forums/subforum?community=${forum.id}`}
+                className={`flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors group ${
+                  idx < COMMUNITY_SUBFORUMS.length - 1 ? 'border-b border-gray-100' : ''
+                }`}
+              >
+                <div className="w-7 h-7 rounded-md flex items-center justify-center text-base flex-shrink-0 bg-gray-100">
+                  <span>{forum.icon}</span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-medium text-gray-700 group-hover:text-gray-900">{forum.name}</div>
+                  <div className="text-xs text-gray-400">{forum.desc}</div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-gray-400">
+                    {countsLoading ? '—' : communityThreadCounts[forum.id].toLocaleString()} thread{communityThreadCounts[forum.id] !== 1 ? 's' : ''}
+                  </span>
+                  <ChevronRight size={14} className="text-gray-300 group-hover:text-gray-400 flex-shrink-0" />
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Generation subforums */}
       {showGen && (
@@ -90,7 +205,7 @@ export function ForumIndex() {
                     BMW {gen} · {GENERATION_YEARS[gen]}
                   </span>
                   <span className="text-xs text-gray-400">
-                    {GEN_THREAD_COUNTS[gen].toLocaleString()} threads
+                    {countsLoading ? '—' : genThreadCounts[gen].toLocaleString()} thread{genThreadCounts[gen] !== 1 ? 's' : ''}
                   </span>
                 </div>
 
@@ -268,7 +383,7 @@ export function ForumIndex() {
             </span>
             <span className="text-sm font-medium text-gray-800 flex-1">Regional discussion — US & Canada</span>
             <span className="text-xs text-gray-400">
-              {REGIONAL_SUBFORUMS.reduce((a) => a + 180, 0).toLocaleString()} threads
+              {countsLoading ? '—' : regionalThreadCount.toLocaleString()} thread{regionalThreadCount !== 1 ? 's' : ''}
             </span>
           </div>
 

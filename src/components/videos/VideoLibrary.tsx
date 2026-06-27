@@ -10,14 +10,22 @@ import { GENERATIONS, Generation } from '@/types'
 import { useAuth } from '@/components/auth/AuthProvider'
 import { SubmitVideoModal } from './SubmitVideoModal'
 
+declare global {
+  interface Window {
+    instgrm?: { Embeds: { process: () => void } }
+  }
+}
+
 interface Video {
   id: string
-  youtube_id: string
+  youtube_id: string | null
+  instagram_url: string | null
+  platform: 'youtube' | 'instagram'
   title: string
   channel_name: string
   category: string
   generation: string
-  duration: string
+  duration: string | null
   like_count: number
   created_at: string
   profiles: { username: string } | { username: string }[]
@@ -30,7 +38,6 @@ function VideoCard({ video }: { video: Video }) {
 
   return (
     <div className="border border-gray-100 rounded-xl overflow-hidden hover:border-gray-200 transition-colors group">
-      {/* Thumbnail / player */}
       <div
         className="relative aspect-video bg-gray-100 cursor-pointer overflow-hidden"
         onClick={() => setPlaying(true)}
@@ -43,7 +50,7 @@ function VideoCard({ video }: { video: Video }) {
             allowFullScreen
           />
         ) : (
-            <>
+          <>
             <div className="relative w-full h-full">
               <Image
                 src={`https://img.youtube.com/vi/${video.youtube_id}/mqdefault.jpg`}
@@ -67,7 +74,6 @@ function VideoCard({ video }: { video: Video }) {
         )}
       </div>
 
-      {/* Info */}
       <div className="p-3">
         <p className="text-sm font-medium text-gray-900 leading-snug mb-1.5 line-clamp-2">
           {video.title}
@@ -106,12 +112,91 @@ function VideoCard({ video }: { video: Video }) {
   )
 }
 
+function InstagramVideoCard({ video }: { video: Video }) {
+  const colors = GEN_COLORS[video.generation as Generation]
+  const [liked, setLiked] = useState(false)
+
+  useEffect(() => {
+    if (window.instgrm) {
+      window.instgrm.Embeds.process()
+    } else {
+      const script = document.createElement('script')
+      script.src = 'https://www.instagram.com/embed.js'
+      script.async = true
+      script.onload = () => {
+        if (window.instgrm) window.instgrm.Embeds.process()
+      }
+      document.body.appendChild(script)
+    }
+  }, [])
+
+  return (
+    <div className="border border-gray-100 rounded-xl overflow-hidden hover:border-gray-200 transition-colors">
+      <div className="relative w-full" style={{ paddingBottom: '177.78%' }}>
+        <div className="absolute inset-0 overflow-hidden">
+          <blockquote
+            className="instagram-media"
+            data-instgrm-permalink={video.instagram_url}
+            data-instgrm-version="14"
+            style={{
+              background: '#FFF',
+              border: 0,
+              margin: 0,
+              padding: 0,
+              width: '100%',
+              minWidth: 'unset',
+            }}
+          />
+        </div>
+      </div>
+
+      <div className="p-3">
+        <p className="text-sm font-medium text-gray-900 leading-snug mb-1.5 line-clamp-2">
+          {video.title}
+        </p>
+        <div className="flex items-center gap-2 text-xs text-gray-400 mb-2 flex-wrap">
+          {colors && (
+            <span className="font-medium px-1.5 py-0.5 rounded text-[10px]"
+              style={{ background: colors.bg, color: colors.text }}>
+              {video.generation}
+            </span>
+          )}
+          <span>{video.channel_name}</span>
+        </div>
+        <div className="flex items-center justify-between">
+          <button
+            onClick={() => setLiked(l => !l)}
+            className={`inline-flex items-center gap-1.5 text-xs transition-colors ${
+              liked ? 'text-red-500' : 'text-gray-400 hover:text-red-400'
+            }`}
+          >
+            <Heart size={12} className={liked ? 'fill-red-500' : ''} />
+            {video.like_count + (liked ? 1 : 0)}
+          </button>
+          <a
+            href={video.instagram_url ?? '#'}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 text-xs text-gray-400 hover:text-pink-600 transition-colors"
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/>
+            </svg>
+            Instagram
+          </a>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export function VideoLibrary() {
   const { } = useAuth()
   const [videos, setVideos] = useState<Video[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [genFilter, setGenFilter] = useState('')
+  const [platform, setPlatform] = useState<'youtube' | 'instagram'>('youtube')
   const [showSubmitModal, setShowSubmitModal] = useState(false)
 
   const loadVideos = useCallback(async () => {
@@ -120,6 +205,7 @@ export function VideoLibrary() {
       const data = await getVideos({
         generation: genFilter || undefined,
         search: search || undefined,
+        platform: platform,
       })
       setVideos(data as Video[])
     } catch {
@@ -127,14 +213,13 @@ export function VideoLibrary() {
     } finally {
       setLoading(false)
     }
-  }, [genFilter, search])
+  }, [genFilter, search, platform])
 
   useEffect(() => {
     const t = setTimeout(loadVideos, 300)
     return () => clearTimeout(t)
   }, [loadVideos])
 
-  // Group by category for Netflix-style rows
   const grouped = VIDEO_CATEGORIES.reduce((acc, cat) => {
     const catVideos = videos.filter(v => v.category === cat.id)
     if (catVideos.length > 0) acc[cat.id] = catVideos
@@ -142,6 +227,12 @@ export function VideoLibrary() {
   }, {} as Record<string, Video[]>)
 
   const hasVideos = Object.keys(grouped).length > 0
+
+  const instagramIcon = (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/>
+    </svg>
+  )
 
   return (
     <div>
@@ -156,6 +247,32 @@ export function VideoLibrary() {
           className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-900 text-white text-sm font-medium hover:bg-gray-700 transition-colors flex-shrink-0"
         >
           <Youtube size={14} /> Submit video
+        </button>
+      </div>
+
+      {/* Platform toggle */}
+      <div className="flex items-center gap-1 p-1 bg-gray-100 rounded-lg w-fit mb-6">
+        <button
+          onClick={() => setPlatform('youtube')}
+          className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
+            platform === 'youtube'
+              ? 'bg-white text-gray-900 shadow-sm'
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          <Youtube size={14} />
+          YouTube
+        </button>
+        <button
+          onClick={() => setPlatform('instagram')}
+          className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
+            platform === 'instagram'
+              ? 'bg-white text-gray-900 shadow-sm'
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          {instagramIcon}
+          Instagram
         </button>
       </div>
 
@@ -208,7 +325,9 @@ export function VideoLibrary() {
           <Youtube size={28} className="text-gray-300 mx-auto mb-3" />
           <p className="text-sm font-medium text-gray-500 mb-1">No videos yet</p>
           <p className="text-xs text-gray-400 mb-4">
-            {search || genFilter ? 'Try adjusting your filters.' : 'Be the first to submit a video.'}
+            {search || genFilter
+              ? 'Try adjusting your filters.'
+              : `Be the first to submit a ${platform === 'youtube' ? 'YouTube video' : 'Instagram Reel'}.`}
           </p>
           <button onClick={() => setShowSubmitModal(true)}
             className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-900 text-white text-sm font-medium hover:bg-gray-700 transition-colors">
@@ -230,7 +349,9 @@ export function VideoLibrary() {
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                 {grouped[cat.id].map(video => (
-                  <VideoCard key={video.id} video={video} />
+                  platform === 'youtube'
+                    ? <VideoCard key={video.id} video={video} />
+                    : <InstagramVideoCard key={video.id} video={video} />
                 ))}
               </div>
             </section>
@@ -242,7 +363,7 @@ export function VideoLibrary() {
       <div className="mt-12 border border-gray-100 rounded-xl p-6 bg-gray-50 flex items-center justify-between gap-6">
         <div>
           <p className="text-sm font-medium text-gray-900 mb-1">Know a great video?</p>
-          <p className="text-xs text-gray-500">Submit a YouTube link and it&apos;ll appear in the library once approved. DIY guides, build diaries, reviews — all welcome.</p>
+          <p className="text-xs text-gray-500">Submit a YouTube video or Instagram Reel and it&apos;ll appear in the library once approved.</p>
         </div>
         <button onClick={() => setShowSubmitModal(true)}
           className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-gray-900 text-white text-sm font-medium hover:bg-gray-700 transition-colors flex-shrink-0">
