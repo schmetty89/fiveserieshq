@@ -13,12 +13,13 @@ export default function AdminPage() {
           <h1 className="text-xl font-semibold text-gray-900 mb-1">Admin dashboard</h1>
           <p className="text-sm text-gray-500 mb-8">Manage content, members, and moderation.</p>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
             {[
               { label: 'Pending vendors',   href: '/admin/vendors',   color: 'bg-amber-50 border-amber-100 text-amber-700' },
               { label: 'Pending videos',    href: '/admin/videos',    color: 'bg-blue-50 border-blue-100 text-blue-700' },
               { label: 'Pending tech',      href: '/admin/technical', color: 'bg-purple-50 border-purple-100 text-purple-700' },
               { label: 'Forum threads',     href: '/admin/forums',    color: 'bg-green-50 border-green-100 text-green-700' },
+              { label: 'Pending builds',    href: '/admin/builds',    color: 'bg-orange-50 border-orange-100 text-orange-700' },
             ].map(item => (
               <a key={item.href} href={item.href}
                 className={`border rounded-xl p-5 hover:opacity-80 transition-opacity ${item.color}`}>
