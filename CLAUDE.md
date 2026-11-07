@@ -4,8 +4,9 @@
 FiveSeriesHQ (fiveserieshq.com) is a BMW 5 Series enthusiast community site. Stack: Next.js 15.3.6 / TypeScript / Tailwind CSS / Supabase / Vercel. Repo: schmetty89/fiveserieshq (public GitHub).
 
 ## Critical workflow rules
-- Repo path: `G:/My Drive/Fiveserieshq/fiveserieshq` — the space in "My Drive" breaks local `npm run build` and `npm install`. NEVER run these locally.
-- All builds go through Vercel preview + GitHub Actions CI (lint + tsc --noEmit).
+- Repo path: `D:/dev/fiveserieshq` (moved Nov 2026). The old copy at `G:/My Drive/Fiveserieshq/fiveserieshq` is retired; do not edit it.
+- The new path has no spaces, so local `npm install`, `npm run dev`, `npm run build` and `npm run lint` are fine.
+- Vercel preview + GitHub Actions CI (lint + tsc --noEmit) remain the gate for merging.
 - Claude Code edits only — commits and pushes via GitHub Desktop.
 - Prompt files named `*-prompt.md` are dropped in repo root and gitignored.
 - `main` is branch-protected: feature branch → PR → green CI → merge.
@@ -16,6 +17,7 @@ FiveSeriesHQ (fiveserieshq.com) is a BMW 5 Series enthusiast community site. Sta
 - Project: fiveserieshq, id: xgfvrlrbeymronphmpii
 - Admin user id: a8c167c6-4f0e-4ba3-8485-9be951da2141
 - Free plan — no dev branches, all migrations go to production
+- Free plan pauses the project after ~1 week of inactivity; the site's data calls then fail with 502s. Restore it from the dashboard (or the Supabase MCP `restore_project`) and wait for status ACTIVE_HEALTHY.
 - Always verify migrations with read-only queries after applying
 - RLS: use `auth.uid() is not null` not `auth.role() = 'authenticated'`
 - Public storage buckets: article-images, hero-images, tech-documents, build-media
@@ -26,7 +28,12 @@ FiveSeriesHQ (fiveserieshq.com) is a BMW 5 Series enthusiast community site. Sta
 - `builds` — build showcase submissions (moderation_status, build_status)
 - `build_components` — components per build (section, name, manufacturer, supplier, part_number, cost, quantity, status, installed_date, sort_order)
 - `build_photos` — photos per build (url, caption, is_cover, sort_order, media_type) — partial unique index ensures one cover per build
-- `articles` — technical guides
+- `tech_articles` — technical guides
+- `tech_documents` — technical document uploads
+- `garage_cars` — members' cars
+- `vendors`, `vendor_reviews` — vendor directory and reviews
+- `events` — events listing
+- `forum_threads`, `forum_posts` — forum tables used by src/lib/forum-data.ts, admin-data.ts and member-data.ts. Note: ForumIndex.tsx counts from `threads` instead — two parallel forum schemas exist; check which one a change should target.
 - `videos` — video library (platform: 'youtube'|'instagram', youtube_id nullable, instagram_url nullable, approved, rejected)
 - `awards` — 70 award definitions across 10 chains (hardcoded config)
 - `member_awards` — junction table (user_id, award_id, earned_at, displayed_profile bool, displayed_posts bool)
